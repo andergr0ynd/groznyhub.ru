@@ -1,0 +1,7 @@
+# Запрет прямого доступа к PHP-модулям через браузер (утечка исходников).
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>

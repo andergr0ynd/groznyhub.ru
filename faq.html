@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FAQ и правила рефки - Mark Grozny</title>
+    <link rel="icon" href="icons/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#0e0e10">
+    <meta name="color-scheme" content="dark">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="icons/logo.png" alt="Logo">
+                <span>Mark Grozny</span>
+            </a>
+            <div class="header-right">
+                <a href="index.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Главная</a>
+                <a href="search.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Поиск</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="faq-page fade-in">
+            <div class="faq-hero">
+                <h1>📖 FAQ и правила рефки</h1>
+                <p>Как работает система времени в чате, бонусы, кейсы, дуэль контейнеров и джекпот на стриме Mark Grozny.</p>
+            </div>
+
+            <section class="faq-section">
+                <h2>⏰ Рефка — что это?</h2>
+                <p>Рефка — это учёт времени, которое вы проводите в активном чате во время стрима. Накопленное время можно тратить на кейсы, дуэль контейнеров и джекпот.</p>
+                <ul class="faq-list">
+                    <li>Запуск: команда <code>!startrefka</code> в чате Twitch или Kick.</li>
+                    <li>После команды таймер запускается сразу. Пишите в чат, чтобы оставаться активным.</li>
+                    <li>Если долгое время нет активности — таймер останавливается (нужно снова <code>!startrefka</code>).</li>
+                    <li>Рефка работает только когда стрим онлайн.</li>
+                    <li>Статистика доступна на сайте в профиле и через поиск.</li>
+                </ul>
+            </section>
+
+            <section class="faq-section">
+                <h2>🎁 Ежедневный бонус (!бонус)</h2>
+                <p>Каждый зритель может раз в сутки забрать бесплатные минуты рефки командой <code>!бонус</code>.</p>
+                <ul class="faq-list">
+                    <li>Награды по серии (дни 1–7): +5 мин → +8 мин → +11 мин → +14 мин → +17 мин → +20 мин → +23 мин.</li>
+                    <li>Серия сохраняется, если забираете бонус каждый день подряд (по Москве).</li>
+                    <li>Пропустили день — серия сбрасывается на 1-й день.</li>
+                </ul>
+            </section>
+
+            <section class="faq-section">
+                <h2>🎁 Кейсы (!купить кейс)</h2>
+                <ul class="faq-list">
+                    <li>Покупка: <code>!купить кейс</code> — стоимость 90 мин накопленной рефки.</li>
+                    <li>Нужен запущенный таймер рефки (<code>!startrefka</code>).</li>
+                    <li>Кейсы доступны только во время стрима.</li>
+                    <li>Первый успевший покупатель получает случайный кейс на RADMIR RP.</li>
+                </ul>
+            </section>
+
+            <section class="faq-section">
+                <h2>📦 Дуэль контейнеров (!контейнер)</h2>
+                <p>Мини-игра в чате: вы и другой зритель открываете по 5 контейнеров с машинами. Побеждает тот, у кого больше суммарная стоимость в ₽.</p>
+                <ul class="faq-list">
+                    <li>Вызов: <code>!контейнер 30 @ник</code>, соперник отвечает <code>!контейнер принять</code> или <code>!контейнер отказать</code>. Отозвать свой вызов — <code>!контейнер отозвать</code>.</li>
+                    <li>Нельзя вызвать самого себя или кинуть повторный вызов тому же человеку, пока дуэль активна.</li>
+                    <li>Перед игрой выберите монетку: <code>!контейнер орел</code> или <code>!контейнер решка</code> — от этого зависит, кто ходит первым.</li>
+                    <li>Победитель забирает x2 ставки в рефке; проигравший теряет свою ставку.</li>
+                    <li>Общий кулдаун — 10 мин между дуэлями в чате (для всех).</li>
+                    <li>Контейнеры доступны только во время стрима. Дуэль показывается на виджете в OBS.</li>
+                </ul>
+            </section>
+
+            <section class="faq-section">
+                <h2>🎰 Рулетка 0–36 (!ставка)</h2>
+                <ul class="faq-list">
+                    <li>Ставка: <code>!ставка 17</code> или <code>!ставка 30 1,27,17</code> — до 3 разных чисел за раунд, по умолчанию 30 мин на число.</li>
+                    <li>Минимум — 10 мин на число. Повторно на то же число поставить нельзя.</li>
+                    <li>Угадал число — выплата x36. Не угадал — ставка уходит в банк.</li>
+                    <li>Модератор запускает раунд командой <code>!джекпот</code>.</li>
+                </ul>
+            </section>
+
+            <section class="faq-section">
+                <h2>💰 Обмен и связь</h2>
+                <ul class="faq-list">
+                    <li>Пакеты «Богатей со скидкой» — на странице <a href="Obmen/index.html">Обмен через стримера</a>.</li>
+                    <li>Покупка через VK или Telegram — текст сообщения подставляется автоматически.</li>
+                    <li>Акции на сайте действуют только когда такая же акция активна на игровом сервере.</li>
+                </ul>
+            </section>
+
+            <div class="faq-actions">
+                <a href="search.html" class="btn btn-secondary">🔍 Поиск пользователей</a>
+                <a href="Obmen/index.html" class="btn btn-secondary">💰 Обмен</a>
+                <a href="koleso/index.html" class="btn btn-secondary">🎡 Колесо</a>
+                <a href="index.html" class="btn btn-primary">Мой профиль</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p id="footerDateTime"></p>
+            <p style="margin-top: 0.5rem;">
+                <a href="faq.html" class="footer-link">FAQ и правила рефки</a>
+                ·
+                <a href="donate.html" class="footer-link">Продление сайта / бота</a>
+            </p>
+        </div>
+    </footer>
+
+    <nav class="mobile-bottom-nav" aria-label="Навигация">
+        <a href="index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🏠</span><span class="mobile-nav-label">Главная</span></a>
+        <a href="search.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🔍</span><span class="mobile-nav-label">Поиск</span></a>
+        <a href="faq.html" class="mobile-nav-link is-active"><span class="mobile-nav-icon" aria-hidden="true">📖</span><span class="mobile-nav-label">FAQ</span></a>
+        <a href="donate.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🖧</span><span class="mobile-nav-label">Поддержать</span></a>
+        <a href="Obmen/index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">💰</span><span class="mobile-nav-label">Обмен</span></a>
+        <a href="koleso/index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🎡</span><span class="mobile-nav-label">Колесо</span></a>
+    </nav>
+    <script src="js/main.js"></script>
+</body>
+</html>

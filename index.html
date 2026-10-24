@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Профиль - Demo</title>
+    <link rel="icon" href="icons/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#0e0e10">
+    <meta name="color-scheme" content="dark">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="icons/logo.png" alt="Logo">
+                <span>Mark Grozny</span>
+            </a>
+            <div class="header-right">
+                <a class="stream-status-pill is-offline" href="https://www.twitch.tv/mark_grozny" target="_blank" rel="noopener noreferrer">Оффлайн</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="case-ticker" aria-label="Последние покупки кейсов">
+        <div class="case-ticker-label">🎁 Кейсы</div>
+        <div class="case-ticker-viewport">
+            <div class="case-ticker-marquee">
+                <div class="case-ticker-group">
+                    <span class="case-ticker-item">
+                        <span class="case-ticker-avatar case-ticker-avatar-fallback">V</span>
+                        <a class="case-ticker-user" href="u/index.html?nick=viewer_one">@viewer_one</a>
+                        <span class="case-ticker-action">забрал</span>
+                        <img class="case-ticker-case-icon" src="icons/0.png" alt="">
+                        <span class="case-ticker-case">Коллекция «Форсаж»</span>
+                    </span>
+                </div>
+                <div class="case-ticker-group" aria-hidden="true">
+                    <span class="case-ticker-item">
+                        <span class="case-ticker-avatar case-ticker-avatar-fallback">V</span>
+                        <a class="case-ticker-user" href="u/index.html?nick=viewer_one">@viewer_one</a>
+                        <span class="case-ticker-action">забрал</span>
+                        <img class="case-ticker-case-icon" src="icons/0.png" alt="">
+                        <span class="case-ticker-case">Коллекция «Форсаж»</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="case-ticker jackpot-ticker" aria-label="Последние победители джекпота">
+        <div class="case-ticker-label">🎰 Рулетка</div>
+        <div class="case-ticker-viewport">
+            <div class="case-ticker-marquee">
+                <div class="case-ticker-group">
+                    <span class="case-ticker-item">
+                        <span class="case-ticker-avatar case-ticker-avatar-fallback">V</span>
+                        <a class="case-ticker-user" href="u/index.html?nick=viewer_two">@viewer_two</a>
+                        <span class="case-ticker-action">выиграл</span>
+                        <span class="case-ticker-case">1ч</span>
+                    </span>
+                </div>
+                <div class="case-ticker-group" aria-hidden="true">
+                    <span class="case-ticker-item">
+                        <span class="case-ticker-avatar case-ticker-avatar-fallback">V</span>
+                        <a class="case-ticker-user" href="u/index.html?nick=viewer_two">@viewer_two</a>
+                        <span class="case-ticker-action">выиграл</span>
+                        <span class="case-ticker-case">1ч</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <div class="container profile-layout">
+            <div class="profile-dashboard fade-in">
+                <p class="demo-banner">Демо на GitHub Pages: без домена, без входа и без сервера. Цифры ниже — пример, игры открываются в браузере.</p>
+
+                <section class="profile-card profile-settings fade-in">
+                    <div class="profile-section-header">
+                        <span class="section-icon">🔒</span>
+                        <div>
+                            <h3>Настройки профиля</h3>
+                            <p>Приватность профиля.</p>
+                        </div>
+                    </div>
+                    <label class="profile-toggle">
+                        <input type="checkbox" id="privacyToggle">
+                        <div class="toggle-text">
+                            <strong>Приватный профиль</strong>
+                            <small>Скрыть мою статистику из поиска</small>
+                        </div>
+                    </label>
+                </section>
+
+                <section class="profile-card profile-summary fade-in">
+                    <div class="profile-avatar"><span>D</span></div>
+                    <div class="profile-summary-info">
+                        <h1>Demo</h1>
+                        <p class="profile-username">@demo</p>
+                        <div class="profile-share-box">
+                            <label>Публичная ссылка для Discord:</label>
+                            <div class="profile-share-row">
+                                <input type="text" id="publicProfileUrl" readonly value="">
+                                <button type="button" class="btn btn-secondary" id="copyPublicProfileUrl" style="padding: 0.6rem 1rem; font-size: 0.875rem;">Копировать</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <a href="Obmen/index.html" class="btn btn-secondary">💰 Обмен через стримера</a>
+                        <a href="koleso/index.html" class="btn btn-secondary">🎡 Колесо</a>
+                        <a href="lotereya/index.html" class="btn btn-secondary">🎫 Лотерея</a>
+                        <a href="search.html" class="btn btn-secondary">🔍 Поиск пользователей</a>
+                        <a href="faq.html" class="btn btn-secondary">📖 FAQ</a>
+                        <a href="donate.html" class="btn btn-secondary">Поддержать</a>
+                        <a href="widget/jackpot.html?demo=1" class="btn btn-secondary">🎰 Рулетка, демо</a>
+                        <a href="widget/containers.html?demo=1" class="btn btn-secondary">📦 Контейнеры, демо</a>
+                    </div>
+                </section>
+
+                <section class="profile-card profile-stats fade-in">
+                    <div class="profile-section-header" style="margin-bottom: 1rem;">
+                        <span class="section-icon">📊</span>
+                        <div>
+                            <h3>Общая статистика</h3>
+                            <p>Пример активности в демо-профиле.</p>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stats-item">
+                            <span class="label">⏰ Общее время:</span>
+                            <span class="value">5ч 5м 0с</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">💬 Сообщений:</span>
+                            <span class="value">12</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">🔥 Серия бонусов:</span>
+                            <span class="value">3/7</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="label">🎁 Ежедневный бонус:</span>
+                            <span class="value">доступен: +11 мин (!бонус)</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p id="footerDateTime"></p>
+            <p style="margin-top: 0.5rem;">
+                <a href="faq.html" class="footer-link">FAQ и правила рефки</a>
+                ·
+                <a href="donate.html" class="footer-link">Продление сайта / бота</a>
+            </p>
+            <p style="margin-top: 0.5rem;">Пользователей на сайте: 3</p>
+        </div>
+    </footer>
+
+    <nav class="mobile-bottom-nav" aria-label="Навигация">
+        <a href="index.html" class="mobile-nav-link is-active"><span class="mobile-nav-icon" aria-hidden="true">🏠</span><span class="mobile-nav-label">Главная</span></a>
+        <a href="search.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🔍</span><span class="mobile-nav-label">Поиск</span></a>
+        <a href="faq.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">📖</span><span class="mobile-nav-label">FAQ</span></a>
+        <a href="donate.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🖧</span><span class="mobile-nav-label">Поддержать</span></a>
+        <a href="Obmen/index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">💰</span><span class="mobile-nav-label">Обмен</span></a>
+        <a href="koleso/index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🎡</span><span class="mobile-nav-label">Колесо</span></a>
+    </nav>
+
+    <script src="js/main.js"></script>
+    <script>
+        (function () {
+            var input = document.getElementById('publicProfileUrl');
+            var btn = document.getElementById('copyPublicProfileUrl');
+            var privacy = document.getElementById('privacyToggle');
+            if (input) {
+                input.value = new URL('u/index.html?nick=demo', window.location.href).href;
+            }
+            if (btn && input) {
+                btn.addEventListener('click', function () {
+                    var original = btn.textContent;
+                    var done = function () {
+                        btn.textContent = '✓ Скопировано';
+                        setTimeout(function () { btn.textContent = original; }, 2000);
+                    };
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(input.value).then(done);
+                    }
+                });
+            }
+            if (privacy) {
+                privacy.checked = localStorage.getItem('demo-private') === '1';
+                privacy.addEventListener('change', function () {
+                    localStorage.setItem('demo-private', privacy.checked ? '1' : '0');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

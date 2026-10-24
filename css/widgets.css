@@ -1,0 +1,307 @@
+/**
+ * OBS-виджеты GroznyHub — общие стили (case, jackpot, containers, raffle, hub)
+ */
+@import url('theme.css');
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent !important;
+    font-family: var(--widget-font);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* OBS: ничего не рисуем, пока виджет явно не включён */
+body:not(.obs-allow) .widget:not(.visible):not(.showing),
+body:not(.obs-allow) .gh-widget:not(.visible):not(.showing),
+body:not(.obs-allow) .obs-standby:not(.force-show),
+body:not(.obs-allow) .sky:not(.showing) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* —— Базовый контейнер виджета —— */
+.gh-widget,
+.widget {
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    pointer-events: none;
+}
+
+.gh-widget.visible,
+.gh-widget.showing,
+.widget.visible,
+.widget.showing {
+    display: flex;
+}
+
+/* —— Панели OBS —— */
+.gh-panel,
+.panel,
+.obs-panel {
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    color: #fff;
+    border-radius: var(--radius-2xl);
+    padding: 24px 22px;
+}
+
+.gh-panel--twitch,
+.panel.gh-panel--twitch,
+.obs-panel.gh-panel--twitch {
+    background: var(--widget-panel-bg-twitch);
+    border: 2px solid var(--widget-border-twitch);
+    box-shadow: var(--shadow-glow-twitch);
+}
+
+.gh-panel--kick,
+.obs-panel.gh-panel--kick {
+    background: var(--widget-panel-bg-kick);
+    border: 2px solid var(--widget-border-kick);
+    box-shadow: var(--shadow-glow-kick);
+}
+
+.gh-panel--gold,
+.gh-panel--radmir,
+.obs-panel.gh-panel--gold,
+.obs-panel.winner-mode.gh-panel--gold {
+    background: var(--widget-panel-bg-gold);
+    border: 2px solid var(--widget-border-gold);
+    box-shadow: var(--shadow-glow-gold);
+}
+
+.gh-panel--neutral,
+.obs-panel.gh-panel--neutral {
+    background: var(--widget-panel-bg-neutral);
+    border: 2px solid var(--widget-border-neutral);
+    box-shadow: 0 18px 50px rgba(14, 116, 144, 0.28);
+}
+
+.gh-panel::before,
+.panel::before,
+.obs-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.07), transparent 58%);
+}
+
+.gh-panel--twitch::after,
+.panel.gh-panel--twitch::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.07) 50%, transparent 80%);
+    transform: translateX(-120%);
+    animation: gh-shine 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes gh-shine {
+    0%, 100% { transform: translateX(-120%); }
+    50% { transform: translateX(120%); }
+}
+
+.gh-panel > *,
+.panel > *,
+.obs-panel > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* —— Бейджи —— */
+.gh-badge,
+.badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.gh-badge--twitch,
+.badge.gh-badge--twitch {
+    background: var(--twitch-purple-soft);
+    border: 1px solid var(--widget-border-twitch);
+    color: var(--twitch-text);
+}
+
+.gh-badge--kick {
+    background: var(--kick-green-soft);
+    border: 1px solid var(--widget-border-kick);
+    color: var(--kick-text);
+}
+
+.gh-badge--gold,
+.badge:not(.gh-badge--twitch):not(.gh-badge--kick) {
+    background: rgba(255, 201, 51, 0.14);
+    border: 1px solid var(--widget-border-gold);
+    color: #fde68a;
+}
+
+/* —— Типографика виджетов —— */
+.gh-title,
+.title {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.gh-subtitle,
+.subtitle {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.72);
+    margin-bottom: 14px;
+}
+
+.gh-bank,
+.bank {
+    font-size: clamp(2rem, 6vw, 3.25rem);
+    font-weight: 800;
+    color: var(--radmir-gold);
+    text-shadow: 0 0 28px var(--radmir-gold-glow);
+    font-variant-numeric: tabular-nums;
+    margin: 8px 0;
+}
+
+.gh-timer,
+.timer {
+    font-size: clamp(2.25rem, 7vw, 3.5rem);
+    font-weight: 800;
+    color: #fef3c7;
+    font-variant-numeric: tabular-nums;
+}
+
+.gh-timer.urgent,
+.timer.urgent {
+    color: var(--danger);
+    animation: gh-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes gh-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
+}
+
+/* —— Прогресс-бар —— */
+.gh-progress,
+.progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.gh-progress > span,
+.progress > span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: var(--gradient-triple);
+    transform-origin: left center;
+    transition: transform 0.2s linear;
+}
+
+/* —— OBS debug / standby —— */
+#obs-debug {
+    position: fixed;
+    left: 8px;
+    bottom: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--kick-green);
+    font-size: 11px;
+    font-family: Consolas, 'Courier New', monospace;
+    z-index: 9999;
+    display: none;
+    border: 1px solid rgba(83, 252, 24, 0.25);
+}
+
+#obs-debug.on { display: block; }
+
+.obs-standby {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: rgba(8, 12, 18, 0.9);
+    border: 1px solid var(--widget-border-kick);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 40;
+    box-shadow: var(--shadow-soft);
+}
+
+.obs-standby.hidden {
+    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.obs-standby .pulse-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--kick-green);
+    box-shadow: 0 0 10px var(--kick-green-glow);
+    animation: gh-standby-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes gh-standby-pulse {
+    0%, 100% { opacity: 0.45; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* —— Hub мегафон —— */
+.hub-bubble {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 18px 14px 20px;
+    border-radius: 18px 18px 18px 6px;
+    background: var(--widget-panel-bg-gold);
+    border: 2px solid var(--widget-border-gold);
+    box-shadow: var(--shadow-glow-gold);
+    color: #fff;
+}
+
+.hub-bubble-title {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--radmir-gold);
+    margin-bottom: 4px;
+}
+
+.hub-bubble-text {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.35;
+}

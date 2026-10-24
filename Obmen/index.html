@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Богатей со скидкой - Пакеты</title>
+    <link rel="icon" href="../icons/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        main {
+            padding: 3rem 0;
+            color: var(--text-primary);
+        }
+
+        main .promotion-header-left h2,
+        main .packages-header h2,
+        main .calculator-header p,
+        main .sum-calculator-header p,
+        main .package-label .label-text,
+        main .calculator-package-name,
+        main .calculator-result-label,
+        main .sum-calculator-result-main .label,
+        main .sum-calculator-breakdown,
+        main .sum-calculator-input-row label,
+        main .modal-header p,
+        main .package-info,
+        main .original-price {
+            color: #c2c2c7;
+        }
+
+        .packages-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .packages-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .packages-header h2 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .promotion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding: 0 1rem;
+        }
+
+        .promotion-header-left h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+            line-height: 1.1;
+            color: #fff;
+        }
+
+        .promotion-header-left h1 .accent {
+            color: var(--radmir-orange);
+        }
+
+        .promotion-header-left h2 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        .promotion-header-right {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--radmir-gold);
+            text-shadow: 0 0 24px rgba(255, 205, 0, 0.25);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 0.875rem 2rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            color: #efeff1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-button:hover {
+            background: var(--bg-elevated);
+            border-color: var(--glass-highlight);
+            transform: translateY(-1px);
+        }
+
+        .tab-button:not(.active):hover {
+            color: #fff;
+        }
+
+        .tab-button.active,
+        .tab-button.active:hover,
+        .tab-button.active:focus-visible {
+            background: var(--gradient-warm);
+            border-color: transparent;
+            color: #fff;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 0 1px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 4px 16px rgba(255, 94, 0, 0.35);
+        }
+
+        .tab-button.active:hover {
+            box-shadow: 0 6px 22px rgba(255, 94, 0, 0.45);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .package-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-panel);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .package-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-brand);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .package-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .package-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+            border-color: var(--glass-highlight);
+        }
+
+        .package-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .package-label {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .package-label .label-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .package-label .label-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .package-image {
+            width: 100%;
+            height: 200px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .package-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .package-image.fallback::before {
+            content: '💰';
+            font-size: 4rem;
+            opacity: 0.3;
+        }
+
+        .package-image.gold.fallback::before {
+            content: '🥇';
+        }
+
+        .package-prices {
+            margin-top: auto;
+            text-align: center;
+        }
+
+        .original-price {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            position: relative;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .original-price::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -5%;
+            right: -5%;
+            height: 2px;
+            background: #ff4444;
+            transform: rotate(-12deg);
+            z-index: 1;
+        }
+
+        .new-price {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--radmir-gold);
+            margin-top: 0.5rem;
+        }
+
+        .buy-button {
+            width: 100%;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            background: var(--gradient-warm);
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 0 1px rgba(0, 0, 0, 0.45);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(255, 94, 0, 0.35);
+        }
+
+        .buy-button:hover,
+        .buy-button:focus-visible {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(255, 94, 0, 0.45);
+            filter: brightness(1.05);
+        }
+
+        .buy-button:active {
+            transform: translateY(0);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 7, 15, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: var(--shadow-panel);
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-brand);
+            pointer-events: none;
+        }
+
+        .modal-content > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .modal-button {
+            padding: 1rem 1.5rem;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .modal-button.vk {
+            background: linear-gradient(135deg, #4C75A3 0%, #5B88BD 100%);
+            color: white;
+            border-color: rgba(76, 117, 163, 0.5);
+        }
+
+        .modal-button.vk:hover {
+            background: linear-gradient(135deg, #5B88BD 0%, #6B9AC8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 117, 163, 0.4);
+        }
+
+        .modal-button.tg {
+            background: linear-gradient(135deg, #229ED9 0%, #2EA5E5 100%);
+            color: white;
+            border-color: rgba(34, 158, 217, 0.5);
+        }
+
+        .modal-button.tg:hover {
+            background: linear-gradient(135deg, #2EA5E5 0%, #3BB0F0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 158, 217, 0.4);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            color: #c2c2c7;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-elevated);
+            color: #fff;
+            border-color: var(--glass-highlight);
+        }
+
+        .modal-message-preview {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-message-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-message-preview-header small {
+            color: #c2c2c7;
+            font-size: 0.85rem;
+        }
+
+        .modal-copy-btn {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.4rem 0.8rem;
+            color: #efeff1;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .modal-copy-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--glass-highlight);
+        }
+
+        .modal-message-text {
+            color: #fff;
+            font-size: 0.95rem;
+            margin: 0;
+            word-break: break-word;
+        }
+
+        .modal-notice {
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.45);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-notice p {
+            color: #efeff1;
+            font-size: 0.9rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .package-info {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        /* Important Notice Modal */
+        .notice-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 7, 15, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .notice-modal.active {
+            display: flex;
+        }
+
+        .notice-content {
+            background: var(--bg-secondary);
+            border: 2px solid rgba(255, 193, 7, 0.55);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow-panel);
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        .notice-content::before {
+            display: none;
+        }
+
+        .notice-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .notice-header h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffc107;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .notice-header .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .notice-body {
+            color: #efeff1;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .notice-body strong {
+            color: #ffc107;
+        }
+
+        .notice-footer {
+            text-align: center;
+        }
+
+        .notice-button {
+            padding: 1rem 2rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 5px 15px rgba(255, 94, 0, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+        }
+
+        .notice-button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 94, 0, 0.4);
+        }
+
+        .notice-button:active {
+            transform: translateY(0);
+        }
+
+        /* Calculator */
+        .calculator-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow-panel);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculator-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-brand);
+            pointer-events: none;
+        }
+
+        .calculator-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .calculator-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .calculator-header h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .calculator-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .calculator-packages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .calculator-package-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .calculator-package-value {
+            font-size: 1.1rem;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .calculator-package-price {
+            font-size: 0.85rem;
+            color: var(--radmir-orange);
+            font-weight: 600;
+        }
+
+        .calculator-package-name {
+            font-size: 0.9rem;
+            color: #c2c2c7;
+            font-weight: 600;
+        }
+
+        .calculator-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .calculator-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .calculator-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 94, 0, 0.2);
+        }
+
+        .calculator-results {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .calculator-result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .calculator-result-label {
+            color: #c2c2c7;
+            font-size: 1rem;
+        }
+
+        .calculator-result-value {
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .calculator-result-item:last-child {
+            border-bottom: none;
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--radmir-orange);
+        }
+
+        .calculator-result-item:last-child .calculator-result-value {
+            color: var(--radmir-gold);
+            font-size: 1.5rem;
+        }
+
+        .calculator-clear {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calculator-clear:hover {
+            background: var(--bg-elevated);
+            border-color: var(--glass-highlight);
+        }
+
+        /* Расчёт по сумме */
+        .sum-calculator {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow-panel);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sum-calculator::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-brand);
+            pointer-events: none;
+        }
+
+        .sum-calculator > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .sum-calculator-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .sum-calculator-header h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .sum-calculator-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .sum-calculator-input-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .sum-calculator-input-row label {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .sum-calculator-input-row input {
+            width: 140px;
+            padding: 0.75rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-align: center;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .sum-calculator-input-row input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 94, 0, 0.2);
+        }
+
+        .sum-calculator-input-row .currency {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .sum-calculator-results {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+        }
+
+        .sum-calculator-result-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 2px solid var(--radmir-orange);
+            margin-bottom: 1rem;
+        }
+
+        .sum-calculator-result-main .label {
+            color: #c2c2c7;
+            font-size: 1.1rem;
+        }
+
+        .sum-calculator-result-main .value {
+            color: var(--radmir-gold);
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .sum-calculator-breakdown {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-top: 0.75rem;
+        }
+
+        .sum-calculator-breakdown div {
+            padding: 0.35rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sum-calculator-breakdown .pack-name {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .sum-calculator-breakdown .pack-detail {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .sum-calculator-empty {
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .sum-calculator-cheapest-warning {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 193, 7, 0.12);
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .sum-calculator-cheapest-warning .warn-title {
+            color: #ffc107;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+
+        .sum-calculator-cheapest-warning .warn-text {
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+
+        .sum-calculator-cheapest-warning .warn-extra {
+            margin-top: 0.5rem;
+            color: #ffc107;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .packages-header h1 {
+                font-size: 2rem;
+            }
+
+            .promotion-header-left h1 {
+                font-size: 2.5rem;
+            }
+
+            .promotion-header-right {
+                font-size: 1.8rem;
+            }
+
+            .packages-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .package-value {
+                font-size: 2rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                width: 100%;
+            }
+
+            .calculator-packages {
+                grid-template-columns: 1fr;
+            }
+
+            .calculator-result-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .calculator-result-value {
+                font-size: 1.1rem;
+            }
+
+            .calculator-result-item:last-child .calculator-result-value {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="../index.html" class="logo">
+                <img src="../icons/logo.png" alt="Logo" onerror="this.style.display='none';">
+                <span>Mark Grozny</span>
+            </a>
+            <div class="header-right">
+                <a href="../index.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                    На главную
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="promotion-header">
+                <div class="promotion-header-left">
+                    <h1>БОГАТЕЙ <span class="accent">СО СКИДКОЙ</span></h1>
+                </div>
+                <div class="promotion-header-right" id="promotion-header">Акция x2</div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="showTab('x2', this)">Акция x2</button>
+                <button class="tab-button" onclick="showTab('x3', this)">Акция x3</button>
+                <button class="tab-button" onclick="showTab('no-promo', this)">Без акций</button>
+            </div>
+
+            <!-- Calculator -->
+            <div class="calculator-section">
+                <div class="calculator-header">
+                    <h3>🧮 Калькулятор пакетов</h3>
+                    <p>Рассчитайте общую сумму при покупке нескольких пакетов</p>
+                </div>
+                <div class="calculator-packages" id="calculatorPackages">
+                    <!-- Пакеты будут добавлены через JavaScript -->
+                </div>
+                <div class="calculator-results">
+                    <div class="calculator-result-item">
+                        <span class="calculator-result-label">Общая сумма получения:</span>
+                        <span class="calculator-result-value" id="totalValue">0</span>
+                    </div>
+                    <div class="calculator-result-item">
+                        <span class="calculator-result-label">Общая стоимость:</span>
+                        <span class="calculator-result-value" id="totalPrice">0p</span>
+                    </div>
+                    <div class="calculator-result-item">
+                        <span class="calculator-result-label">Итого к оплате:</span>
+                        <span class="calculator-result-value" id="totalPayment">0p</span>
+                    </div>
+                </div>
+                <button class="calculator-clear" onclick="clearCalculator()">Очистить</button>
+            </div>
+
+            <!-- Расчёт по сумме -->
+            <div class="sum-calculator">
+                <div class="sum-calculator-header">
+                    <h3>💰 Расчёт по сумме</h3>
+                    <p>Введите сумму в рублях — покажем, сколько получите по текущей акции</p>
+                </div>
+                <div class="sum-calculator-input-row">
+                    <label for="sumInput">Сумма:</label>
+                    <input type="number" id="sumInput" min="0" step="100" placeholder="5000" value="" oninput="calculateBySum()">
+                    <span class="currency">₽</span>
+                </div>
+                <div class="sum-calculator-results" id="sumCalculatorResults">
+                    <div class="sum-calculator-empty" id="sumCalculatorEmpty">Введите сумму в рублях</div>
+                    <div id="sumCalculatorContent" style="display: none;">
+                        <div class="sum-calculator-result-main">
+                            <span class="label">Получите (валюта):</span>
+                            <span class="value" id="sumTotalValue">0</span>
+                        </div>
+                        <div class="sum-calculator-breakdown" id="sumCalculatorBreakdown"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Акция x2 -->
+            <div id="tab-x2" class="tab-content active">
+                <div class="packages-grid">
+                    <div class="package-card">
+                        <div class="package-value">220.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">СТАРТ ДЛЯ НАЧАЛА</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package1.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">100.000</div>
+                            <div class="new-price">108p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('220.000', 'СТАРТ ДЛЯ НАЧАЛА', '108p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">550.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">СОЛИДНЕНЬКО</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package2.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">250.000</div>
+                            <div class="new-price">240p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('550.000', 'СОЛИДНЕНЬКО', '240p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">1.210.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">САМОЕ ТО</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package3.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">550.000</div>
+                            <div class="new-price">480p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('1.210.000', 'САМОЕ ТО', '480p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">3.058.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">ВОРОВСКОЕ</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package4.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">1.390.000</div>
+                            <div class="new-price">960p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('3.058.000', 'ВОРОВСКОЕ', '960p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">16.500.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">ЗОЛОТЫЕ ЗАПАСЫ</div>
+                        </div>
+                        <div class="package-image gold">
+                            <img src="images/package5.png" alt="Золото" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">7.500.000</div>
+                            <div class="new-price">4800p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('16.500.000', 'ЗОЛОТЫЕ ЗАПАСЫ', '4800p')">Написать</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Акция x3 -->
+            <div id="tab-x3" class="tab-content">
+                <div class="packages-grid">
+                    <div class="package-card">
+                        <div class="package-value">330.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">СТАРТ ДЛЯ НАЧАЛА</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package6.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">100.000</div>
+                            <div class="new-price">108p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('330.000', 'СТАРТ ДЛЯ НАЧАЛА', '108p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">825.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">СОЛИДНЕНЬКО</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package7.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">250.000</div>
+                            <div class="new-price">240p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('825.000', 'СОЛИДНЕНЬКО', '240p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">1.815.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">САМОЕ ТО</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package8.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">550.000</div>
+                            <div class="new-price">480p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('1.815.000', 'САМОЕ ТО', '480p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">4.587.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">ВОРОВСКОЕ</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package9.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">1.390.000</div>
+                            <div class="new-price">960p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('4.587.000', 'ВОРОВСКОЕ', '960p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">24.750.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">ЗОЛОТЫЕ ЗАПАСЫ</div>
+                        </div>
+                        <div class="package-image gold">
+                            <img src="images/package10.png" alt="Золото" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">7.500.000</div>
+                            <div class="new-price">4800p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('24.750.000', 'ЗОЛОТЫЕ ЗАПАСЫ', '4800p')">Написать</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Без акций -->
+            <div id="tab-no-promo" class="tab-content">
+                <div class="packages-grid">
+                    <div class="package-card">
+                        <div class="package-value">100.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">СТАРТ ДЛЯ НАЧАЛА</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package11.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">110.000</div>
+                            <div class="new-price">108p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('100.000', 'СТАРТ ДЛЯ НАЧАЛА', '108p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">250.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">СОЛИДНЕНЬКО</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package12.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">275.000</div>
+                            <div class="new-price">240p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('250.000', 'СОЛИДНЕНЬКО', '240p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">550.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">САМОЕ ТО</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package13.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">605.000</div>
+                            <div class="new-price">480p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('550.000', 'САМОЕ ТО', '480p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">1.390.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">ВОРОВСКОЕ</div>
+                        </div>
+                        <div class="package-image">
+                            <img src="images/package14.png" alt="Деньги" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">1.529.000</div>
+                            <div class="new-price">960p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('1.390.000', 'ВОРОВСКОЕ', '960p')">Написать</button>
+                    </div>
+
+                    <div class="package-card">
+                        <div class="package-value">7.500.000</div>
+                        <div class="package-label">
+                            <div class="label-text">НАБОР</div>
+                            <div class="label-name">ЗОЛОТЫЕ ЗАПАСЫ</div>
+                        </div>
+                        <div class="package-image gold">
+                            <img src="images/package15.png" alt="Золото" onerror="this.style.display='none'; this.parentElement.classList.add('fallback');">
+                        </div>
+                        <div class="package-prices">
+                            <div class="original-price">8.250.000</div>
+                            <div class="new-price">4800p</div>
+                        </div>
+                        <button class="buy-button" onclick="openModal('7.500.000', 'ЗОЛОТЫЕ ЗАПАСЫ', '4800p')">Написать</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Important Notice Modal -->
+    <div id="importantNotice" class="notice-modal active">
+        <div class="notice-content">
+            <div class="notice-header">
+                <div class="icon">⚠️</div>
+                <h3>ВАЖНО</h3>
+            </div>
+            <div class="notice-body">
+                <p>Каждая акция из обменов работает только во время того, когда такая же акция работает на сервере.</p>
+                <p style="margin-top: 1rem;">Для более подробной информации пишите стримеру через кнопку <strong>"Написать"</strong>.</p>
+            </div>
+            <div class="notice-footer">
+                <button class="notice-button" onclick="closeNotice()">Понятно</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="contactModal" class="modal" onclick="closeModalOnBackdrop(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div class="modal-header">
+                <h3>Выберите способ связи</h3>
+                <p id="modalPackageInfo"></p>
+            </div>
+            <div class="modal-message-box" id="messageBox" style="display: none;">
+                <div class="modal-message-preview">
+                    <div class="modal-message-preview-header">
+                        <small>Текст сообщения:</small>
+                        <button type="button" class="modal-copy-btn" onclick="copyMessage(event)">
+                            📋 Копировать
+                        </button>
+                    </div>
+                    <p id="messageText" class="modal-message-text"></p>
+                </div>
+            </div>
+            <div class="modal-notice">
+                <span style="font-size: 1.25rem;">ℹ️</span>
+                <p>
+                    Текст подставится в поле сообщения автоматически. Если не сработало — скопируйте его кнопкой выше.
+                </p>
+            </div>
+            <div class="modal-buttons">
+                <a href="#" id="vkLink" class="modal-button vk" target="_blank" rel="noopener noreferrer">
+                    <span>ВКонтакте</span>
+                </a>
+                <a href="#" id="tgLink" class="modal-button tg" target="_blank" rel="noopener noreferrer">
+                    <span>Telegram</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ID пользователя ВК (vk.com/markgrozny07) — нужен для автоподстановки текста
+        const VK_USER_ID = 637106424;
+        const TG_LINK = 'https://t.me/mark_grozny_online';
+
+        let currentMessage = '';
+
+        function buildVkMessageLink(message) {
+            const encodedMessage = encodeURIComponent(message);
+            return `https://vk.com/im?sel=${VK_USER_ID}&msg=${encodedMessage}`;
+        }
+
+        function openModal(value, name, price) {
+            const modal = document.getElementById('contactModal');
+            const packageInfo = document.getElementById('modalPackageInfo');
+            const vkLink = document.getElementById('vkLink');
+            const tgLink = document.getElementById('tgLink');
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            
+            // Формируем сообщение для отправки
+            currentMessage = `Здравствуйте! Хочу приобрести пакет "${name}" (${value}) за ${price}`;
+            const encodedMessage = encodeURIComponent(currentMessage);
+            
+            // Устанавливаем информацию о пакете
+            packageInfo.textContent = `${name} - ${value} (${price})`;
+            
+            // Показываем текст сообщения для ВК
+            messageText.textContent = currentMessage;
+            messageBox.style.display = 'block';
+            
+            vkLink.href = buildVkMessageLink(currentMessage);
+            tgLink.href = `${TG_LINK}?text=${encodedMessage}`;
+            
+            // Показываем модальное окно
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function copyTextToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text);
+            }
+
+            return new Promise(function(resolve, reject) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.setAttribute('readonly', '');
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+
+                try {
+                    const copied = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    if (copied) {
+                        resolve();
+                    } else {
+                        reject(new Error('execCommand failed'));
+                    }
+                } catch (err) {
+                    document.body.removeChild(textarea);
+                    reject(err);
+                }
+            });
+        }
+
+        function showCopyFeedback(button, successText) {
+            if (!button) {
+                return;
+            }
+
+            const originalHtml = button.innerHTML;
+            button.innerHTML = successText;
+            button.style.background = 'rgba(103, 242, 203, 0.2)';
+            button.style.borderColor = 'rgba(103, 242, 203, 0.5)';
+
+            setTimeout(function() {
+                button.innerHTML = originalHtml;
+                button.style.background = '';
+                button.style.borderColor = '';
+            }, 2000);
+        }
+
+        function copyMessage(event) {
+            copyTextToClipboard(currentMessage).then(function() {
+                const button = event ? event.target.closest('button') : null;
+                showCopyFeedback(button, '✓ Скопировано');
+            }).catch(function(err) {
+                console.error('Ошибка копирования:', err);
+                alert('Не удалось скопировать текст. Скопируйте вручную.');
+            });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('contactModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function closeModalOnBackdrop(event) {
+            if (event.target.id === 'contactModal') {
+                closeModal();
+            }
+        }
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+                closeNotice();
+            }
+        });
+
+        // Important Notice Functions
+        function closeNotice() {
+            const notice = document.getElementById('importantNotice');
+            notice.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Показываем уведомление при загрузке страницы
+        window.addEventListener('load', function() {
+            // Уведомление уже показано через класс 'active' в HTML
+            document.body.style.overflow = 'hidden';
+            // Инициализируем калькулятор
+            updateCalculator();
+        });
+
+        // Calculator Functions
+        function parseNumber(str) {
+            return parseInt(str.replace(/\./g, '').replace(/[^\d]/g, ''));
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function updateCalculator() {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+
+            const packages = activeTab.querySelectorAll('.package-card');
+            const calculatorPackages = document.getElementById('calculatorPackages');
+            calculatorPackages.innerHTML = '';
+
+            packages.forEach((packageCard, index) => {
+                const valueElement = packageCard.querySelector('.package-value');
+                const nameElement = packageCard.querySelector('.label-name');
+                const priceElement = packageCard.querySelector('.new-price');
+
+                if (!valueElement || !nameElement || !priceElement) return;
+
+                const value = parseNumber(valueElement.textContent);
+                const name = nameElement.textContent.trim();
+                const price = parseNumber(priceElement.textContent);
+
+                const packageItem = document.createElement('div');
+                packageItem.className = 'calculator-package-item';
+                packageItem.innerHTML = `
+                    <div class="calculator-package-name">${name}</div>
+                    <div class="calculator-package-value">${formatNumber(value)}</div>
+                    <div class="calculator-package-price">${price}p</div>
+                    <div class="calculator-input-group">
+                        <label style="color: var(--text-secondary); font-size: 0.85rem;">Количество:</label>
+                        <input type="number" 
+                               class="calculator-input" 
+                               min="0" 
+                               value="0" 
+                               data-value="${value}" 
+                               data-price="${price}"
+                               data-name="${name}"
+                               onchange="calculateTotal()"
+                               oninput="calculateTotal()">
+                    </div>
+                `;
+                calculatorPackages.appendChild(packageItem);
+            });
+
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            const inputs = document.querySelectorAll('.calculator-input');
+            let totalValue = 0;
+            let totalPrice = 0;
+
+            inputs.forEach(input => {
+                const quantity = parseInt(input.value) || 0;
+                const value = parseInt(input.dataset.value) || 0;
+                const price = parseInt(input.dataset.price) || 0;
+
+                totalValue += value * quantity;
+                totalPrice += price * quantity;
+            });
+
+            document.getElementById('totalValue').textContent = formatNumber(totalValue);
+            document.getElementById('totalPrice').textContent = formatNumber(totalPrice) + 'p';
+            document.getElementById('totalPayment').textContent = formatNumber(totalPrice) + 'p';
+        }
+
+        function clearCalculator() {
+            const inputs = document.querySelectorAll('.calculator-input');
+            inputs.forEach(input => {
+                input.value = 0;
+            });
+            calculateTotal();
+        }
+
+        // Расчёт по сумме (оптимальная комбинация пакетов при заданном бюджете)
+        function getCurrentPackages() {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return [];
+            const packages = activeTab.querySelectorAll('.package-card');
+            const result = [];
+            packages.forEach(card => {
+                const valueEl = card.querySelector('.package-value');
+                const nameEl = card.querySelector('.label-name');
+                const priceEl = card.querySelector('.new-price');
+                if (!valueEl || !nameEl || !priceEl) return;
+                const value = parseNumber(valueEl.textContent);
+                const price = parseNumber(priceEl.textContent);
+                const name = nameEl.textContent.trim();
+                if (price > 0) result.push({ value, price, name });
+            });
+            return result;
+        }
+
+        function calculateBySum() {
+            const sumInput = document.getElementById('sumInput');
+            const emptyEl = document.getElementById('sumCalculatorEmpty');
+            const contentEl = document.getElementById('sumCalculatorContent');
+            const totalValueEl = document.getElementById('sumTotalValue');
+            const breakdownEl = document.getElementById('sumCalculatorBreakdown');
+
+            const budget = parseInt(sumInput.value, 10) || 0;
+            if (budget <= 0) {
+                emptyEl.style.display = 'block';
+                contentEl.style.display = 'none';
+                return;
+            }
+
+            const packages = getCurrentPackages();
+            if (packages.length === 0) {
+                emptyEl.textContent = 'Нет данных пакетов';
+                emptyEl.style.display = 'block';
+                contentEl.style.display = 'none';
+                return;
+            }
+
+            // Неограниченный рюкзак: максимизируем value при сумме price <= budget
+            const dp = Array(budget + 1).fill(0);
+            const used = Array(budget + 1).fill(null); // { counts: { name: count }, ... }
+
+            for (let s = 0; s <= budget; s++) {
+                for (const pkg of packages) {
+                    if (pkg.price <= s) {
+                        const candidate = dp[s - pkg.price] + pkg.value;
+                        if (candidate > dp[s]) {
+                            dp[s] = candidate;
+                            const prev = used[s - pkg.price];
+                            const counts = prev ? { ...prev.counts } : {};
+                            counts[pkg.name] = (counts[pkg.name] || 0) + 1;
+                            used[s] = { counts };
+                        }
+                    }
+                }
+            }
+
+            // Лучший результат при тратах от 0 до budget (не обязательно ровно budget)
+            let bestSum = 0;
+            let bestValue = 0;
+            for (let s = 0; s <= budget; s++) {
+                if (dp[s] >= bestValue) {
+                    bestValue = dp[s];
+                    bestSum = s;
+                }
+            }
+
+            const totalValue = bestValue;
+            const counts = used[bestSum] ? used[bestSum].counts : {};
+
+            emptyEl.style.display = 'none';
+            contentEl.style.display = 'block';
+            totalValueEl.textContent = formatNumber(totalValue);
+
+            let breakdownHtml = '';
+            let totalSpent = 0;
+            for (const [name, count] of Object.entries(counts)) {
+                if (count <= 0) continue;
+                const pkg = packages.find(p => p.name === name);
+                if (!pkg) continue;
+                const packCost = pkg.price * count;
+                totalSpent += packCost;
+                breakdownHtml += `<div><span class="pack-name">${count}× ${name}</span> <span class="pack-detail">${pkg.price}₽ × ${count} = ${formatNumber(packCost)}₽</span></div>`;
+            }
+            const leftover = budget - totalSpent;
+            if (leftover > 0 && totalSpent > 0) {
+                breakdownHtml += `<div><span class="pack-name">Остаток</span> <span class="pack-detail">${formatNumber(leftover)}₽ (не хватает на следующий пакет)</span></div>`;
+                const cheapest = packages.reduce((min, p) => (p.price < min.price ? p : min), packages[0]);
+                if (cheapest && leftover < cheapest.price) {
+                    breakdownHtml += `
+                        <div class="sum-calculator-cheapest-warning">
+                            <div class="warn-title">⚠️ Бонус за остаток:</div>
+                            <div class="warn-text">Можно выдать бонусом пакет</div>
+                            <div class="warn-text"><strong>${cheapest.name}</strong></div>
+                            <div class="warn-text">(${formatNumber(cheapest.value)}). За остаток ${formatNumber(leftover)}₽ уточняйте у стримера, выдаст или нет.</div>
+                        </div>`;
+                }
+            }
+            breakdownEl.innerHTML = breakdownHtml || '<div class="sum-calculator-empty">Не удалось подобрать пакеты</div>';
+        }
+
+        function showTab(tabName, button) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById('tab-' + tabName).classList.add('active');
+
+            if (button) {
+                button.classList.add('active');
+            }
+
+            // Обновить заголовок
+            const header = document.getElementById('promotion-header');
+            if (tabName === 'x2') {
+                header.textContent = 'Акция x2';
+            } else if (tabName === 'x3') {
+                header.textContent = 'Акция x3';
+            } else {
+                header.textContent = 'БЕЗ АКЦИЙ';
+            }
+
+            // Обновить калькулятор при смене вкладки
+            setTimeout(function() {
+                updateCalculator();
+                calculateBySum();
+            }, 100);
+        }
+    </script>
+</body>
+</html>

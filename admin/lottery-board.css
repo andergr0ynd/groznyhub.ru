@@ -1,0 +1,517 @@
+@import url('../css/theme.css');
+
+/* Мини-поле лотереи для админки */
+.lottery-board-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 0.5rem 0 1rem;
+}
+
+.lottery-board-scale {
+    --field-w: 560px;
+    --field-h: 436px;
+    width: var(--field-w);
+    max-width: 100%;
+    flex-shrink: 0;
+}
+
+.lottery-board-scale .lottery {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2px;
+    background: #181c22;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    width: var(--field-w);
+    height: var(--field-h);
+    display: flex;
+    flex-direction: column;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
+}
+
+.lottery-board-scale .lottery-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, transparent 12%, transparent 88%, rgba(0, 0, 0, 0.65) 100%),
+        linear-gradient(rgba(10, 12, 16, 0.75), rgba(6, 8, 12, 0.88)),
+        url("../icons/sherp.png") center / cover no-repeat;
+    pointer-events: none;
+}
+
+.lottery-board-scale .lottery-inner {
+    position: relative;
+    z-index: 1;
+    padding: 12px 16px 10px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.lottery-board-scale .brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    margin-bottom: 4px;
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    flex-shrink: 0;
+}
+
+.lottery-board-scale .brand img {
+    height: 14px;
+    width: auto;
+    opacity: 0.85;
+}
+
+.lottery-board-scale .title {
+    text-align: center;
+    font-size: 1.45rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    margin: 0 0 6px;
+    text-shadow: 0 4px 18px rgba(0, 0, 0, 0.65);
+    flex-shrink: 0;
+}
+
+.lottery-board-scale .badge-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.lottery-board-scale .badge {
+    padding: 0.2rem 0.65rem;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #62e86f 0%, #2db83d 100%);
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 10px rgba(45, 184, 61, 0.45);
+}
+
+.lottery-board-scale .stage-nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+}
+
+.lottery-board-scale .stage-btn {
+    font-family: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(0, 0, 0, 0.28);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.58rem;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.55rem;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.lottery-board-scale .stage-btn:hover {
+    border-color: rgba(255, 170, 0, 0.5);
+    color: #fff;
+}
+
+.lottery-board-scale .stage-btn.active {
+    background: linear-gradient(180deg, rgba(255, 140, 0, 0.4), rgba(255, 100, 0, 0.22));
+    border-color: rgba(255, 170, 0, 0.7);
+    color: #fff;
+}
+
+.lottery-board-scale .stage-title {
+    text-align: center;
+    font-size: 0.62rem;
+    font-weight: 800;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+}
+
+.lottery-board-scale .grid-wrap {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: 0 2px;
+}
+
+.lottery-board-scale .grid {
+    display: grid;
+    gap: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.lottery-board-scale .grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    max-width: 100%;
+}
+
+.lottery-board-scale .grid.cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    max-width: 100%;
+}
+
+.lottery-board-scale .grid.cols-5 {
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    max-width: 100%;
+}
+
+.lottery-board-scale .grid.cols-3 .cell:nth-child(3n) { border-right: none; }
+.lottery-board-scale .grid.cols-4 .cell:nth-child(4n) { border-right: none; }
+.lottery-board-scale .grid.cols-5 .cell:nth-child(5n) { border-right: none; }
+
+.lottery-board-scale .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+    padding: 5px 6px 6px;
+    border-right: 1px solid rgba(255, 255, 255, 0.16);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lottery-board-scale .label {
+    display: block;
+    text-align: center;
+    margin-bottom: 4px;
+    font-weight: 800;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+.lottery-board-scale.stage-1 .label { font-size: 0.58rem; }
+.lottery-board-scale.stage-2 .label { font-size: 0.52rem; margin-bottom: 3px; }
+.lottery-board-scale.stage-3 .label { font-size: 0.46rem; margin-bottom: 2px; }
+
+.lottery-board-scale .ticket.admin-ticket {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-height: 100%;
+    aspect-ratio: 1;
+    margin: 0 auto;
+    align-self: center;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(145deg, #ff6f00 0%, #ffab00 44%, #ff8500 100%);
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.22),
+        0 5px 14px rgba(0, 0, 0, 0.42);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.lottery-board-scale.stage-1 .ticket.admin-ticket { max-width: min(100%, 148px); border-radius: 10px; }
+.lottery-board-scale.stage-2 .ticket.admin-ticket { max-width: min(100%, 108px); border-radius: 8px; }
+.lottery-board-scale.stage-3 .ticket.admin-ticket { max-width: min(100%, 82px); border-radius: 7px; }
+
+.lottery-board-scale .ticket.admin-ticket:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.42),
+        0 6px 14px rgba(255, 120, 0, 0.35);
+}
+
+.lottery-board-scale .ticket.admin-ticket.is-selected {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.42),
+        0 0 0 2px rgba(255, 170, 0, 0.85),
+        0 8px 18px rgba(255, 120, 0, 0.4);
+}
+
+.lottery-board-scale .ticket.admin-ticket .admin-face {
+    display: flex;
+}
+
+.lottery-board-scale .ticket-closed {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lottery-board-scale .q {
+    font-weight: 900;
+    font-style: italic;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.lottery-board-scale.stage-1 .q { font-size: 2.8rem; }
+.lottery-board-scale.stage-2 .q { font-size: 2rem; }
+.lottery-board-scale.stage-3 .q { font-size: 1.5rem; }
+
+.lottery-board-scale .board-hint {
+    text-align: center;
+    font-size: 0.58rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.38);
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.lottery-board-scale .cell-fields {
+    display: none;
+}
+
+/* Панель редактирования выбранного билета */
+.ticket-editor {
+    width: min(560px, 100%);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+}
+
+.ticket-editor[hidden] {
+    display: none;
+}
+
+.ticket-editor-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.ticket-editor-head strong {
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ticket-editor-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.ticket-editor-fields .field-group label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.ticket-editor-fields select,
+.ticket-editor-fields input[type="text"] {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.ticket-editor-fields .icon-preview-wrap {
+    width: 100%;
+    height: 56px;
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.35rem;
+}
+
+.ticket-editor-fields .icon-preview {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.ticket-editor-fields .wiki-pick-btn {
+    width: 100%;
+    padding: 0.45rem 0.65rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ticket-editor-fields .wiki-pick-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+}
+
+.ticket-editor-fields .wiki-pick-btn:disabled,
+.ticket-editor-fields .wiki-pick-btn.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.board-save-row {
+    width: min(560px, 100%);
+    display: flex;
+    justify-content: center;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 600px) {
+    .lottery-board-scale {
+        transform: scale(calc((100vw - 40px) / 560));
+        transform-origin: top center;
+        height: calc(436px * ((100vw - 40px) / 560));
+        margin-bottom: calc(436px * ((100vw - 40px) / 560) - 436px + 8px);
+    }
+}
+
+/* Раскладка текущей игры для стримера */
+.admin-content--layout {
+    margin-top: 1.5rem;
+}
+
+.layout-lead {
+    margin-bottom: 0.75rem;
+}
+
+.layout-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+}
+
+.layout-meta {
+    flex: 1 1 200px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.lottery-layout-grid {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.lottery-layout-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.lottery-layout-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.lottery-layout-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+.layout-empty {
+    grid-column: 1 / -1;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.layout-cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-height: 72px;
+    padding: 0.45rem 0.35rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-primary);
+    text-align: center;
+}
+
+.layout-cell.type-prize {
+    background: linear-gradient(155deg, rgba(255, 122, 0, 0.18) 0%, rgba(255, 154, 0, 0.08) 100%);
+    border-color: rgba(255, 140, 0, 0.35);
+}
+
+.layout-cell.type-bomb {
+    background: linear-gradient(155deg, rgba(185, 28, 28, 0.22) 0%, rgba(127, 29, 29, 0.12) 100%);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.layout-cell.type-empty {
+    opacity: 0.75;
+}
+
+.layout-cell.is-opened {
+    opacity: 0.55;
+}
+
+.layout-num {
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+}
+
+.layout-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.layout-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text-primary);
+}
+
+.layout-opened {
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+    .lottery-layout-grid.cols-4,
+    .lottery-layout-grid.cols-5 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

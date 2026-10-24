@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Поиск пользователей - Mark Grozny</title>
+    <link rel="icon" href="icons/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#0e0e10">
+    <meta name="color-scheme" content="dark">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .search-container { max-width: 800px; margin: 0 auto; padding: 2rem 20px; }
+        .search-box, .search-results {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-panel);
+        }
+        .search-box { margin-bottom: 2rem; position: relative; overflow: hidden; }
+        .search-box::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--gradient-brand);
+        }
+        .search-form { display: flex; gap: 1rem; margin-bottom: 1rem; }
+        .search-input { flex: 1; }
+        .result-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .result-item:last-child { border-bottom: none; }
+        .result-username { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .result-username a { color: var(--text-primary); text-decoration: none; }
+        .result-stats { display: flex; gap: 2rem; color: var(--text-secondary); font-size: 0.9rem; flex-wrap: wrap; }
+        .no-results { text-align: center; padding: 3rem; color: var(--text-secondary); }
+        .search-hint { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem; }
+        @media (max-width: 768px) {
+            .search-form { flex-direction: column; }
+            .result-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="icons/logo.png" alt="Logo">
+                <span>Mark Grozny</span>
+            </a>
+            <div class="header-right">
+                <a href="index.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Главная</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="search-container fade-in">
+            <div class="search-box">
+                <h1 style="margin-bottom: 1.5rem; color: var(--text-primary);">🔍 Поиск пользователей</h1>
+                <form id="searchForm" class="search-form">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Введите никнейм (без @)" required>
+                    <button type="submit" class="btn btn-primary">Поиск</button>
+                </form>
+                <p class="search-hint">Демо-список из трёх профилей. Приватный профиль в поиске не показывается. · <a href="faq.html" style="color: var(--twitch-purple);">Правила рефки</a></p>
+            </div>
+            <div class="search-results" id="searchResults" hidden></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p id="footerDateTime"></p>
+            <p style="margin-top: 0.5rem;">
+                <a href="faq.html" class="footer-link">FAQ и правила рефки</a>
+                ·
+                <a href="donate.html" class="footer-link">Продление сайта / бота</a>
+            </p>
+        </div>
+    </footer>
+
+    <nav class="mobile-bottom-nav" aria-label="Навигация">
+        <a href="index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🏠</span><span class="mobile-nav-label">Главная</span></a>
+        <a href="search.html" class="mobile-nav-link is-active"><span class="mobile-nav-icon" aria-hidden="true">🔍</span><span class="mobile-nav-label">Поиск</span></a>
+        <a href="faq.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">📖</span><span class="mobile-nav-label">FAQ</span></a>
+        <a href="donate.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🖧</span><span class="mobile-nav-label">Поддержать</span></a>
+        <a href="Obmen/index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">💰</span><span class="mobile-nav-label">Обмен</span></a>
+        <a href="koleso/index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🎡</span><span class="mobile-nav-label">Колесо</span></a>
+    </nav>
+    <script src="js/main.js"></script>
+    <script>
+        (function () {
+            var users = [
+                { username: 'demo', seconds: 18300, messages: 12, streak: 3 },
+                { username: 'viewer_one', seconds: 7200, messages: 40, streak: 1 },
+                { username: 'viewer_two', seconds: 3600, messages: 8, streak: 0 }
+            ];
+            var form = document.getElementById('searchForm');
+            var input = document.getElementById('searchInput');
+            var box = document.getElementById('searchResults');
+
+            function fmt(total) {
+                var h = Math.floor(total / 3600);
+                var m = Math.floor((total % 3600) / 60);
+                return h + 'ч ' + m + 'м';
+            }
+
+            function render(query) {
+                var needle = query.replace(/^@/, '').trim().toLowerCase();
+                var privateDemo = localStorage.getItem('demo-private') === '1';
+                var found = users.filter(function (user) {
+                    if (user.username === 'demo' && privateDemo) return false;
+                    return user.username.indexOf(needle) !== -1;
+                });
+                box.hidden = false;
+                if (!found.length) {
+                    box.innerHTML = '<div class="no-results">Никого не нашли' + (needle === 'demo' && privateDemo ? ': профиль Demo скрыт' : '') + '</div>';
+                    return;
+                }
+                box.innerHTML = found.map(function (user) {
+                    var href = 'u/index.html?nick=' + encodeURIComponent(user.username);
+                    return '<div class="result-item"><div><div class="result-username"><a href="' + href + '">@' + user.username + '</a></div><div class="result-stats"><span>⏰ ' + fmt(user.seconds) + '</span><span>💬 ' + user.messages + '</span><span>🔥 ' + user.streak + '/7</span></div></div></div>';
+                }).join('');
+            }
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                var query = input.value.trim();
+                if (!query) return;
+                history.replaceState(null, '', 'search.html?q=' + encodeURIComponent(query));
+                render(query);
+            });
+
+            var initial = new URLSearchParams(location.search).get('q');
+            if (initial) {
+                input.value = initial;
+                render(initial);
+            }
+        })();
+    </script>
+</body>
+</html>

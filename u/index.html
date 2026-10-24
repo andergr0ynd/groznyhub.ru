@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Профиль - Mark Grozny</title>
+    <link rel="icon" href="../icons/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#0e0e10">
+    <meta name="color-scheme" content="dark">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="../index.html" class="logo">
+                <img src="../icons/logo.png" alt="Logo">
+                <span>Mark Grozny</span>
+            </a>
+            <div class="header-right">
+                <a href="../search.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Поиск</a>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="container profile-layout">
+            <div class="profile-dashboard fade-in" id="profile"></div>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <p id="footerDateTime"></p>
+            <p style="margin-top: 0.5rem;"><a href="../index.html" class="footer-link">На главную</a></p>
+        </div>
+    </footer>
+    <script src="../js/main.js"></script>
+    <script>
+        (function () {
+            var users = {
+                demo: { seconds: 18300, messages: 12, streak: 3 },
+                viewer_one: { seconds: 7200, messages: 40, streak: 1 },
+                viewer_two: { seconds: 3600, messages: 8, streak: 0 }
+            };
+            var nick = (new URLSearchParams(location.search).get('nick') || 'demo').replace(/^@/, '').toLowerCase();
+            var root = document.getElementById('profile');
+            var user = users[nick];
+            if (nick === 'demo' && localStorage.getItem('demo-private') === '1') {
+                user = null;
+                root.innerHTML = '<section class="profile-card"><h1>Профиль скрыт</h1><p>@demo включил приватность в демо.</p></section>';
+                return;
+            }
+            if (!user) {
+                root.innerHTML = '<section class="profile-card"><h1>Профиль не найден</h1><p>В демо есть @demo, @viewer_one и @viewer_two.</p></section>';
+                return;
+            }
+            var h = Math.floor(user.seconds / 3600);
+            var m = Math.floor((user.seconds % 3600) / 60);
+            document.title = '@' + nick + ' - Mark Grozny';
+            root.innerHTML = '<section class="profile-card profile-summary fade-in"><div class="profile-avatar"><span>' + nick.charAt(0).toUpperCase() + '</span></div><div class="profile-summary-info"><h1>@' + nick + '</h1><p class="profile-username">Публичная карточка демо</p></div></section><section class="profile-card profile-stats fade-in"><div class="stats-grid"><div class="stats-item"><span class="label">⏰ Общее время:</span><span class="value">' + h + 'ч ' + m + 'м</span></div><div class="stats-item"><span class="label">💬 Сообщений:</span><span class="value">' + user.messages + '</span></div><div class="stats-item"><span class="label">🔥 Серия бонусов:</span><span class="value">' + user.streak + '/7</span></div></div></section>';
+        })();
+    </script>
+</body>
+</html>

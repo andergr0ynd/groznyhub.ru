@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Container Duel Widget</title>
+    <link rel="stylesheet" href="../css/widgets.css?v=obs5">
+    <style>
+
+        .arena {
+            width: min(1180px, 100%);
+            max-width: 100%;
+            transform-origin: center center;
+            border-radius: 24px;
+            padding: 22px 24px 20px;
+            background: linear-gradient(155deg, rgba(12, 28, 48, 0.97), rgba(6, 12, 22, 0.96));
+            border: 2px solid rgba(56, 189, 248, 0.28);
+            box-shadow: 0 22px 60px rgba(2, 132, 199, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .arena::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 15% 0%, rgba(34, 211, 238, 0.12), transparent 45%),
+                radial-gradient(circle at 85% 100%, rgba(249, 115, 22, 0.1), transparent 40%);
+            pointer-events: none;
+        }
+
+        .arena > * { position: relative; z-index: 1; }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(34, 211, 238, 0.14);
+            border: 1px solid rgba(34, 211, 238, 0.38);
+            color: #a5f3fc;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            text-shadow: 0 0 24px rgba(34, 211, 238, 0.35);
+        }
+
+        .bet-pill {
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            color: #fde68a;
+            font-size: 14px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sides {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .side {
+            border-radius: 18px;
+            padding: 14px 14px 12px;
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .side.active {
+            border-color: rgba(34, 211, 238, 0.55);
+            box-shadow: 0 0 28px rgba(34, 211, 238, 0.18);
+        }
+
+        .side.bot-side.active {
+            border-color: rgba(251, 146, 60, 0.55);
+            box-shadow: 0 0 28px rgba(249, 115, 22, 0.18);
+        }
+
+        .side-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .side-name {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .side-name .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .player-side .side-name .icon {
+            background: rgba(34, 211, 238, 0.2);
+            border: 1px solid rgba(34, 211, 238, 0.4);
+        }
+
+        .bot-side .side-name .icon {
+            background: rgba(249, 115, 22, 0.2);
+            border: 1px solid rgba(249, 115, 22, 0.4);
+        }
+
+        .side-total {
+            font-size: 26px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            color: #fef08a;
+            text-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
+        }
+
+        .player-side .side-total { color: #67e8f9; text-shadow: 0 0 20px rgba(34, 211, 238, 0.3); }
+        .bot-side .side-total { color: #fdba74; text-shadow: 0 0 20px rgba(249, 115, 22, 0.3); }
+
+        .containers {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .container-slot {
+            aspect-ratio: 0.72;
+            position: relative;
+        }
+
+        .container-box {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .container-slot.opening .container-box {
+            animation: shake 0.45s ease-in-out;
+        }
+
+        .container-door,
+        .container-prize {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container-door {
+            z-index: 2;
+            transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .container-door img,
+        .container-prize img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+        }
+
+        .container-slot.opened .container-door {
+            opacity: 0;
+            transform: scale(0.88);
+            pointer-events: none;
+        }
+
+        .container-num {
+            position: absolute;
+            top: 6%;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 26px;
+            height: 26px;
+            padding: 0 7px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        .container-prize {
+            z-index: 1;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.45s 0.12s ease, transform 0.5s 0.08s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background:
+                radial-gradient(circle at 50% 35%, rgba(34, 211, 238, 0.14), transparent 55%),
+                linear-gradient(180deg, rgba(8, 16, 28, 0.35), rgba(4, 8, 14, 0.92));
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .container-slot.opened .container-prize {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .vehicle-card {
+            position: absolute;
+            inset: 6% 6% 34% 6%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .vehicle-prize-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.65));
+        }
+
+        .container-slot.worn-high .vehicle-prize-img {
+            filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.65)) saturate(0.72) brightness(0.9);
+        }
+
+        .prize-overlay {
+            position: absolute;
+            left: 6%;
+            right: 6%;
+            bottom: 6%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.88));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            backdrop-filter: blur(4px);
+            z-index: 3;
+        }
+
+        .car-name {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.92);
+            text-align: center;
+            line-height: 1.2;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 2px;
+        }
+
+        .car-wear {
+            display: block;
+            font-size: 9px;
+            color: #fdba74;
+            margin-bottom: 2px;
+            letter-spacing: 0.03em;
+        }
+
+        .car-govt {
+            display: block;
+            font-size: 9px;
+            color: #fca5a5;
+            margin-bottom: 2px;
+            letter-spacing: 0.03em;
+        }
+
+        .car-value {
+            font-size: 14px;
+            font-weight: 800;
+            color: #fde047;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
+        }
+
+        .vs-strip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 4px 0;
+        }
+
+        .vs-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .turn-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+        }
+
+        .turn-label strong {
+            display: block;
+            color: #fff;
+            font-size: 14px;
+            margin-top: 2px;
+            text-transform: none;
+        }
+
+        .footer {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .status-line {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.72);
+            min-height: 22px;
+        }
+
+        .result-banner {
+            display: none;
+            margin-top: 12px;
+            padding: 14px 20px;
+            border-radius: 14px;
+            font-size: 22px;
+            font-weight: 800;
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .result-banner.show { display: block; }
+
+        .result-banner.win-player {
+            background: linear-gradient(90deg, rgba(34, 211, 238, 0.2), rgba(16, 185, 129, 0.2));
+            border: 1px solid rgba(34, 211, 238, 0.45);
+            color: #a5f3fc;
+        }
+
+        .result-banner.win-bot {
+            background: linear-gradient(90deg, rgba(249, 115, 22, 0.2), rgba(220, 38, 38, 0.2));
+            border: 1px solid rgba(249, 115, 22, 0.45);
+            color: #fdba74;
+        }
+
+        .result-banner.draw {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
+        }
+
+        .hint {
+            margin-top: 10px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .confetti {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 100;
+        }
+
+        .confetti span {
+            position: absolute;
+            top: -12px;
+            width: 8px;
+            height: 14px;
+            border-radius: 2px;
+            opacity: 0.9;
+            animation: fall linear forwards;
+        }
+
+        .container-slot.highlight .container-door img {
+            filter: drop-shadow(0 0 18px rgba(250, 204, 21, 0.55)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px) rotate(-1deg); }
+            40% { transform: translateX(4px) rotate(1deg); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+
+        @keyframes countPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .side-total.bump {
+            animation: countPulse 0.35s ease;
+        }
+
+        .coin-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 14px;
+            background: rgba(4, 8, 16, 0.88);
+            border-radius: 22px;
+            backdrop-filter: blur(4px);
+        }
+
+        .coin-overlay.show {
+            display: flex;
+        }
+
+        .coin-stage {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: width 0.4s ease, height 0.4s ease, transform 0.4s ease;
+        }
+
+        .coin-overlay.spinning-phase .coin-stage {
+            width: 260px;
+            height: 260px;
+            transform: translateY(-4px);
+        }
+
+        .coin-stage img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
+        }
+
+        .coin-stage img.spinning {
+            animation: coinFlip 0.42s linear infinite;
+        }
+
+        .coin-pick-item img.coin-side-spin {
+            animation: coinFlipSmall 0.55s ease-in-out infinite;
+        }
+
+        .coin-stage img.land {
+            animation: coinLand 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .coin-pick-item.active img {
+            filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.55));
+        }
+
+        .coin-pick-item.result img {
+            filter: drop-shadow(0 0 18px rgba(34, 211, 238, 0.65));
+        }
+
+        .coin-pick-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .coin-pick-item {
+            text-align: center;
+            opacity: 0.45;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .coin-pick-item img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 4px;
+        }
+
+        .coin-pick-item span {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .coin-pick-item.active {
+            opacity: 1;
+            transform: scale(1.08);
+        }
+
+        .coin-pick-item.result {
+            opacity: 1;
+        }
+
+        .coin-result-text {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fde68a;
+            text-align: center;
+            line-height: 1.4;
+            max-width: 90%;
+        }
+
+        .coin-result-sub {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.72);
+            text-align: center;
+        }
+
+        @keyframes coinFlip {
+            0% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.14); }
+            100% { transform: rotateY(360deg) scale(1); }
+        }
+
+        @keyframes coinFlipSmall {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        @keyframes coinLand {
+            0% { transform: scale(0.45) rotateY(720deg); opacity: 0.2; }
+            70% { transform: scale(1.08) rotateY(0deg); opacity: 1; }
+            100% { transform: scale(1) rotateY(0deg); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="obs-standby hidden" id="obsStandby">
+        <span class="pulse-dot"></span>
+        <span id="standbyText">Контейнеры · подключение…</span>
+    </div>
+
+    <div class="widget" id="widget">
+        <div class="arena" id="arena">
+            <div class="header">
+                <div>
+                    <div class="badge" id="badge">Дуэль контейнеров</div>
+                    <div class="title">Кто больше вытащит?</div>
+                </div>
+                <div class="bet-pill" id="betPill">Ставка: —</div>
+            </div>
+
+            <div class="sides">
+                <div class="side player-side" id="playerSide">
+                    <div class="side-head">
+                        <div class="side-name">
+                            <span class="icon">👤</span>
+                            <span id="playerName">Зритель</span>
+                        </div>
+                        <div class="side-total" id="playerTotal">0 ₽</div>
+                    </div>
+                    <div class="containers" id="playerContainers"></div>
+                </div>
+
+                <div class="vs-strip">
+                    <div class="vs-badge">VS</div>
+                    <div class="turn-label" id="turnLabel">Ожидание<strong>—</strong></div>
+                </div>
+
+                <div class="side bot-side" id="botSide">
+                    <div class="side-head">
+                        <div class="side-name">
+                            <span class="icon" id="opponentIcon">🤖</span>
+                            <span id="opponentName">БОТ</span>
+                        </div>
+                        <div class="side-total" id="botTotal">0 ₽</div>
+                    </div>
+                    <div class="containers" id="botContainers"></div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="status-line" id="statusLine">Готовим контейнеры…</div>
+                <div class="result-banner" id="resultBanner"></div>
+                <div class="hint" id="hint">!контейнер 30+ @ник · общий КД 10 мин · только в эфире</div>
+            </div>
+
+            <div class="coin-overlay" id="coinOverlay">
+                <div class="coin-pick-row" id="coinPickRow">
+                    <div class="coin-pick-item" id="coinPickHeads">
+                        <img src="" alt="Орёл" id="coinSmallHeads">
+                        <span>Орёл</span>
+                    </div>
+                    <div class="coin-stage">
+                        <img id="coinMain" src="" alt="Монетка">
+                    </div>
+                    <div class="coin-pick-item" id="coinPickTails">
+                        <img src="" alt="Решка" id="coinSmallTails">
+                        <span>Решка</span>
+                    </div>
+                </div>
+                <div class="coin-result-text" id="coinResultText"></div>
+                <div class="coin-result-sub" id="coinResultSub"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="confetti" id="confetti"></div>
+    <div id="obs-debug"></div>
+    <script src="obs-widget.js?v=5"></script>
+    <script src="containers-narration.js?v=5"></script>
+
+    <script>
+        const SITE_ORIGIN = new URL('..', window.location.href).href.replace(/\/$/, '');
+        const API = SITE_ORIGIN + '/api/containers_state.php';
+        const IMG_CLOSE = SITE_ORIGIN + '/icons/conteinerclose.png';
+        const IMG_OPEN = SITE_ORIGIN + '/icons/conteineropen.png';
+        const IMG_OREL = SITE_ORIGIN + '/icons/orel.png';
+        const IMG_RESHKA = SITE_ORIGIN + '/icons/reshka.png';
+        (new Image()).src = IMG_CLOSE;
+        (new Image()).src = IMG_OPEN;
+        (new Image()).src = IMG_OREL;
+        (new Image()).src = IMG_RESHKA;
+        const DEBUG = /[?&]debug=1/.test(window.location.search) || /[?&]obs=1/.test(window.location.search);
+        const SHOW_STANDBY = DEBUG || /[?&]standby=1/.test(window.location.search);
+        const DEMO = /[?&]demo=1/.test(window.location.search);
+        const NARRATION = !/[?&](voice=0|mute=1)/.test(window.location.search);
+        const NARRATION_DEEPSEEK = NARRATION && !/[?&]voice=local/.test(window.location.search);
+        const VOICE_VOL = (function () {
+            const m = window.location.search.match(/[?&]voiceVol=([0-9.]+)/);
+            if (!m) return 1;
+            const v = parseFloat(m[1]);
+            return isNaN(v) ? 1 : Math.max(0, Math.min(1, v));
+        })();
+        const OPEN_MS = 2200;
+        const BETWEEN_MS = 600;
+        const RESULT_MS = 8000;
+        const COIN_SPIN_MS = 10000;
+        const COIN_RESULT_MS = 3500;
+
+        const VEHICLES = [
+            { id: 'invalidka', name: 'LADA Инвалидка', icon: 'invalidka.png', price: 20000 },
+            { id: 'motoblock', name: 'Мотоблок', icon: 'motoblock.png', price: 30000 },
+            { id: 'izh_jupiter5', name: 'ИЖ Юпитер-5', icon: 'ig5.png', price: 40000 },
+            { id: 'gaz3102', name: 'GAZ 3102 Волга', icon: 'gaz3102.png', price: 120000 },
+            { id: 'gazel31105', name: 'Gazel 31105 «Волга»', icon: 'gazel31105.png', price: 165000 },
+            { id: 'lada2112', name: 'LADA 2112', icon: '2112.png', price: 170000 },
+            { id: 'lada2114', name: 'Lada 2114', icon: '2114.png', price: 215000 },
+            { id: 'matiz', name: 'Daewoo Matiz', icon: 'matiz.png', price: 200000 },
+            { id: 'byhanka', name: 'UAZ 452 Буханка', icon: 'byhanka.png', price: 300000 },
+            { id: 'jeep_gc_xj', name: 'JEEP GC XJ', icon: 'Jeep.png', price: 320000 },
+            { id: 'gaz24volga', name: 'GAZ 24 Волга', icon: 'gaz24volga.png', price: 350000 },
+            { id: 'bmw323e30', name: 'BMW 323i E30', icon: '323ie30.png', price: 350000 },
+            { id: 'saab93', name: 'Saab 9.3 Turbo', icon: 'saab.png', price: 600000 },
+            { id: 'uaz3153', name: 'UAZ 3153', icon: '3153uaz.png', price: 700000 },
+            { id: 'patriot', name: 'UAZ Патриот', icon: 'patriot.png', price: 700000 },
+            { id: 'kiario', name: 'KIA Rio', icon: 'kiario.png', price: 700000 },
+            { id: 'camry_v40', name: 'Toyota Camry V40', icon: 'V40.png', price: 850000 },
+            { id: 'bmw540e34', name: 'BMW 540i E34', icon: '540ie34.png', price: 900000 },
+            { id: 'mbw210', name: 'Mercedes E420 W210', icon: 'mbw210.png', price: 1300000 },
+            { id: 'mark100', name: 'Toyota Mark II 100', icon: 'Mark100.png', price: 1200000 },
+            { id: 'wrx_sti', name: 'Subaru Impreza WRX STI', icon: 'wrxsti.png', price: 1200000 },
+            { id: 'hondas2000', name: 'Honda S2000', icon: 'hondas2000.png', price: 1600000 },
+            { id: 'rx7', name: 'Mazda RX-7 Spirit R', icon: 'RX7.png', price: 1600000 },
+            { id: 'minijcw', name: 'Mini JCW GP', icon: 'minijcw.png', price: 1700000 },
+            { id: 'gaz_business', name: 'GAZ Бизнес', icon: 'gryzgaz.png', price: 1900000 },
+            { id: 'ml63', name: 'Mercedes ML63 AMG W164', icon: 'ml63.png', price: 2000000 },
+            { id: 'sherp', name: 'Sherp Вездеход', icon: 'sherp.png', price: 3000000 },
+        ];
+        const VEHICLE_MAP = {};
+        VEHICLES.forEach(function(v) {
+            VEHICLE_MAP[v.id] = v;
+            VEHICLE_MAP[v.name.toLowerCase()] = v;
+            (new Image()).src = SITE_ORIGIN + '/icons/' + v.icon;
+        });
+        const WIDGET_ASSETS_VERSION = 'cars-v26';
+        const GOVT_CUT_PERCENT = 20;
+
+        const debugEl = document.getElementById('obs-debug');
+        const narrator = window.ContainersNarration
+            ? window.ContainersNarration.create({
+                enabled: NARRATION && (
+                    window.ContainersNarration.supportsObsAudio()
+                    || window.ContainersNarration.supportsSpeech()
+                ),
+                useDeepSeek: NARRATION_DEEPSEEK,
+                apiUrl: SITE_ORIGIN + '/api/containers_narrate.php',
+                speechApiUrl: SITE_ORIGIN + '/api/containers_speech.php?text=',
+                useObsAudio: true,
+                voiceVolume: VOICE_VOL,
+                debug: DEBUG,
+                debugEl: debugEl,
+            })
+            : null;
+        function voiceDebugSuffix() {
+            if (!NARRATION) return ' · без озвучки';
+            if (/[?&]voice=system/.test(window.location.search)) return ' · voice:system';
+            return ' · 🔊 obs-mp3';
+        }
+        function setDebug(text) {
+            if (!DEBUG || !debugEl) return;
+            debugEl.textContent = text;
+            debugEl.classList.add('on');
+        }
+
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function calcVehicleValue(base, wear, govtCut) {
+            const govt = govtCut == null ? GOVT_CUT_PERCENT : govtCut;
+            const wearPct = Math.max(0, Math.min(20, Number(wear || 0)));
+            const afterGovt = Math.round(Number(base) * (100 - govt) / 100);
+            return Math.round(afterGovt * (100 - wearPct) / 100);
+        }
+
+        function rollVehicle() {
+            const vehicle = VEHICLES[randInt(0, VEHICLES.length - 1)];
+            const wear = randInt(0, 20);
+            const value = calcVehicleValue(vehicle.price, wear);
+            return {
+                id: vehicle.id,
+                name: vehicle.name,
+                icon: vehicle.icon,
+                base_value: vehicle.price,
+                govt_cut: GOVT_CUT_PERCENT,
+                wear: wear,
+                value: value,
+            };
+        }
+
+        function normalizeVehiclePrize(prize) {
+            if (!prize || typeof prize !== 'object') {
+                return rollVehicle();
+            }
+
+            let catalog = null;
+            if (prize.id && VEHICLE_MAP[prize.id]) {
+                catalog = VEHICLE_MAP[prize.id];
+            } else if (prize.name && VEHICLE_MAP[String(prize.name).toLowerCase()]) {
+                catalog = VEHICLE_MAP[String(prize.name).toLowerCase()];
+            }
+
+            if (catalog) {
+                const wear = Number(prize.wear || 0);
+                const govtCut = Number(prize.govt_cut ?? GOVT_CUT_PERCENT);
+                const base = Number(prize.base_value || catalog.price);
+                const value = Number(prize.value) || calcVehicleValue(base, wear, govtCut);
+                return {
+                    id: catalog.id,
+                    name: catalog.name,
+                    icon: catalog.icon,
+                    base_value: base,
+                    govt_cut: govtCut,
+                    wear: wear,
+                    value: value,
+                };
+            }
+
+            if (prize.icon) {
+                const base = Number(prize.base_value || prize.value || 0);
+                const wear = Number(prize.wear || 0);
+                const govtCut = Number(prize.govt_cut ?? GOVT_CUT_PERCENT);
+                return {
+                    id: prize.id || 'vehicle',
+                    name: prize.name || 'Транспорт',
+                    icon: String(prize.icon).split('/').pop(),
+                    base_value: base,
+                    govt_cut: govtCut,
+                    wear: wear,
+                    value: Number(prize.value) || calcVehicleValue(base, wear, govtCut),
+                };
+            }
+
+            const value = Number(prize.value || 0);
+            let best = VEHICLES[0];
+            let bestDiff = Infinity;
+            VEHICLES.forEach(function(v) {
+                const diff = Math.abs(value - v.price);
+                if (diff < bestDiff) {
+                    bestDiff = diff;
+                    best = v;
+                }
+            });
+
+            return {
+                id: best.id,
+                name: prize.name || best.name,
+                icon: best.icon,
+                base_value: best.price,
+                govt_cut: GOVT_CUT_PERCENT,
+                wear: Number(prize.wear || 0),
+                value: value > 0 ? value : calcVehicleValue(best.price, Number(prize.wear || 0)),
+            };
+        }
+
+        function normalizePrizeList(list, fallbackCount) {
+            const source = Array.isArray(list) && list.length ? list : Array.from({ length: fallbackCount || 5 }, rollVehicle);
+            return source.map(normalizeVehiclePrize);
+        }
+
+        function vehicleIconUrl(icon) {
+            if (!icon) return '';
+            const file = String(icon).split('/').pop();
+            return SITE_ORIGIN + '/icons/' + file + '?v=' + WIDGET_ASSETS_VERSION;
+        }
+
+        function buildDeductionsHtml(car) {
+            const govt = Number(car.govt_cut ?? GOVT_CUT_PERCENT);
+            const wear = Number(car.wear || 0);
+            let html = '<span class="car-govt">Госка −' + govt + '%</span>';
+            if (wear > 0) {
+                html += '<span class="car-wear">Износ −' + wear + '%</span>';
+            }
+            return html;
+        }
+
+        function buildPrizeHtml(car) {
+            const iconUrl = vehicleIconUrl(car.icon);
+            return '<div class="vehicle-card">' +
+                    '<img class="vehicle-prize-img" src="' + iconUrl + '" alt="' + car.name + '">' +
+                '</div>' +
+                '<div class="prize-overlay">' +
+                    '<span class="car-name">' + car.name + '</span>' +
+                    buildDeductionsHtml(car) +
+                    '<span class="car-value">' + formatMoney(car.value) + '</span>' +
+                '</div>';
+        }
+
+        function formatMoney(n) {
+            return Number(n).toLocaleString('ru-RU') + ' ₽';
+        }
+
+        function parseMoney(text) {
+            return Number(String(text).replace(/[^\d]/g, '')) || 0;
+        }
+
+        function formatBetMinutes(seconds) {
+            const m = Math.round(seconds / 60);
+            return m + ' мин';
+        }
+
+        function coinSideImg(side) {
+            return side === 'tails' ? IMG_RESHKA : IMG_OREL;
+        }
+
+        function coinSideLabel(side) {
+            return side === 'tails' ? 'Решка' : 'Орёл';
+        }
+
+        function spawnConfetti(colors) {
+            const el = document.getElementById('confetti');
+            el.innerHTML = '';
+            const palette = colors || ['#22d3ee', '#fbbf24', '#34d399', '#f472b6', '#60a5fa'];
+            for (let i = 0; i < 32; i++) {
+                const piece = document.createElement('span');
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.background = palette[i % palette.length];
+                piece.style.animationDuration = (1.6 + Math.random() * 1.4) + 's';
+                piece.style.animationDelay = (Math.random() * 0.4) + 's';
+                el.appendChild(piece);
+            }
+        }
+
+        function buildContainers(parent, prizes) {
+            parent.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'container-slot';
+                slot.dataset.index = String(i);
+                const car = prizes[i];
+                if (Number(car.wear || 0) >= 12) {
+                    slot.classList.add('worn-high');
+                }
+                slot.innerHTML =
+                    '<div class="container-box">' +
+                        '<div class="container-door">' +
+                            '<img src="' + IMG_CLOSE + '" alt="Контейнер">' +
+                            '<span class="container-num">' + (i + 1) + '</span>' +
+                        '</div>' +
+                        '<div class="container-prize">' +
+                            buildPrizeHtml(car) +
+                        '</div>' +
+                    '</div>';
+                parent.appendChild(slot);
+            }
+        }
+
+        function bumpTotal(el) {
+            el.classList.remove('bump');
+            void el.offsetWidth;
+            el.classList.add('bump');
+        }
+
+        const els = {
+            widget: document.getElementById('widget'),
+            arena: document.getElementById('arena'),
+            obsStandby: document.getElementById('obsStandby'),
+            standbyText: document.getElementById('standbyText'),
+            badge: document.getElementById('badge'),
+            betPill: document.getElementById('betPill'),
+            playerName: document.getElementById('playerName'),
+            playerTotal: document.getElementById('playerTotal'),
+            botTotal: document.getElementById('botTotal'),
+            playerContainers: document.getElementById('playerContainers'),
+            botContainers: document.getElementById('botContainers'),
+            playerSide: document.getElementById('playerSide'),
+            botSide: document.getElementById('botSide'),
+            turnLabel: document.getElementById('turnLabel'),
+            statusLine: document.getElementById('statusLine'),
+            resultBanner: document.getElementById('resultBanner'),
+            hint: document.getElementById('hint'),
+            opponentName: document.getElementById('opponentName'),
+            opponentIcon: document.getElementById('opponentIcon'),
+            coinOverlay: document.getElementById('coinOverlay'),
+            coinMain: document.getElementById('coinMain'),
+            coinSmallHeads: document.getElementById('coinSmallHeads'),
+            coinSmallTails: document.getElementById('coinSmallTails'),
+            coinPickHeads: document.getElementById('coinPickHeads'),
+            coinPickTails: document.getElementById('coinPickTails'),
+            coinResultText: document.getElementById('coinResultText'),
+            coinResultSub: document.getElementById('coinResultSub'),
+        };
+
+        let playing = false;
+        let playingSince = 0;
+        const DUEL_PLAYING_MAX_MS = 150000;
+        let lastAckedId = 0;
+        let cooldownEndsAt = 0;
+        let cooldownTotalSec = 600;
+        let standbyMode = 'connecting';
+        const STANDBY_IDLE = 'Контейнеры · ожидание дуэли';
+        try {
+            lastAckedId = parseInt(localStorage.getItem('container_last_acked_id') || '0', 10) || 0;
+        } catch (e) { /* private mode */ }
+
+        function isPlayingStuck() {
+            return playing && playingSince > 0 && (Date.now() - playingSince) > DUEL_PLAYING_MAX_MS;
+        }
+
+        function resetPlayingIfStuck() {
+            if (!isPlayingStuck()) return false;
+            playing = false;
+            playingSince = 0;
+            els.widget.classList.remove('visible');
+            if (window.obsWidgetBoot) {
+                window.obsWidgetBoot.markHidden(els.widget);
+            }
+            standbyMode = 'idle';
+            hideStandby();
+            setDebug('сброс зависшей дуэли · повтор опроса');
+            return true;
+        }
+
+        function rememberAckedId(id) {
+            lastAckedId = id;
+            try {
+                localStorage.setItem('container_last_acked_id', String(id));
+            } catch (e) { /* private mode */ }
+        }
+
+        async function dismissDuel(duelId) {
+            if (duelId > 0) {
+                rememberAckedId(duelId);
+                await finishDuel(duelId);
+            }
+            hideWidgetUi();
+            hideStandby();
+        }
+
+        function formatCooldownRemaining(seconds) {
+            seconds = Math.max(0, Math.ceil(seconds));
+            if (seconds <= 0) return '';
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            if (m > 0 && s > 0) return m + ' мин ' + s + ' сек';
+            if (m > 0) return m + ' мин';
+            return s + ' сек';
+        }
+
+        function refreshHintIdle() {
+            const totalMin = Math.max(1, Math.round(cooldownTotalSec / 60));
+            els.hint.textContent = '!контейнер 30+ @ник · общий КД ' + totalMin + ' мин · только в эфире';
+        }
+
+        function syncCooldownFromApi(remainingSec, totalSec) {
+            if (typeof totalSec === 'number' && totalSec > 0) {
+                cooldownTotalSec = totalSec;
+            }
+            if (typeof remainingSec === 'number' && remainingSec > 0) {
+                cooldownEndsAt = Date.now() + remainingSec * 1000;
+            } else {
+                cooldownEndsAt = 0;
+            }
+            if (!playing) {
+                refreshHintIdle();
+            }
+        }
+
+        function getCooldownRemainingSec() {
+            if (!cooldownEndsAt) return 0;
+            return Math.max(0, Math.ceil((cooldownEndsAt - Date.now()) / 1000));
+        }
+
+        function refreshStandbyCooldown() {
+            if (!SHOW_STANDBY || !els.obsStandby) return;
+            if (standbyMode !== 'idle') return;
+            if (els.widget.classList.contains('visible')) return;
+            const remaining = getCooldownRemainingSec();
+            let text = STANDBY_IDLE;
+            if (remaining > 0) {
+                text += ' · общий КД ' + formatCooldownRemaining(remaining);
+            }
+            showStandby(text);
+        }
+
+        function showStandbyIdle() {
+            standbyMode = 'idle';
+            if (SHOW_STANDBY) {
+                refreshStandbyCooldown();
+            } else {
+                hideStandby();
+            }
+        }
+
+        function showStandby(text) {
+            if (!SHOW_STANDBY || !els.obsStandby) return;
+            els.obsStandby.classList.remove('hidden');
+            if (els.standbyText && text) els.standbyText.textContent = text;
+        }
+
+        function hideStandby() {
+            if (els.obsStandby) els.obsStandby.classList.add('hidden');
+        }
+
+        function hideWidgetUi() {
+            const confettiEl = document.getElementById('confetti');
+            if (confettiEl) {
+                confettiEl.innerHTML = '';
+                if (window.obsWidgetBoot) {
+                    window.obsWidgetBoot.markHidden(confettiEl);
+                }
+            }
+            if (els.coinOverlay) els.coinOverlay.classList.remove('show');
+            if (els.resultBanner) {
+                els.resultBanner.className = 'result-banner';
+                els.resultBanner.textContent = '';
+            }
+            els.widget.classList.remove('visible');
+            if (window.obsWidgetBoot) {
+                window.obsWidgetBoot.markHidden(els.widget);
+                window.obsWidgetBoot.forceHideAll();
+            }
+        }
+
+        function showWidgetUi() {
+            els.widget.classList.add('visible');
+            if (window.obsWidgetBoot) {
+                window.obsWidgetBoot.markShown(els.widget);
+            }
+        }
+
+        function fitObsLayout() {
+            if (!els.arena) return;
+            const scale = Math.min(1, (window.innerWidth - 24) / 1180);
+            els.arena.style.transform = scale < 0.98 ? ('scale(' + scale + ')') : '';
+        }
+
+        async function finishDuel(id) {
+            if (!id) return;
+            try {
+                const res = await fetch(SITE_ORIGIN + '/api/containers_ack.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id }),
+                });
+                const data = await res.json();
+                if (data && data.success) {
+                    rememberAckedId(id);
+                }
+            } catch (e) { /* network */ }
+        }
+
+        function sleep(ms) {
+            return new Promise(function(resolve) { setTimeout(resolve, ms); });
+        }
+
+        function formatDisplayName(name) {
+            const clean = String(name || '').replace(/^@+/, '');
+            return clean ? ('@' + clean) : 'Зритель';
+        }
+
+        function isPvpDuel(config) {
+            return config.duel_mode === 'pvp' || !!config.opponent_username;
+        }
+
+        function getOpponentLabel(config) {
+            if (!isPvpDuel(config)) return 'БОТ';
+            return formatDisplayName(config.opponent_username);
+        }
+
+        async function openContainer(side, index, runningTotal, totalEl, sideEl, label) {
+            const parent = side === 'player' ? els.playerContainers : els.botContainers;
+            const slot = parent.children[index];
+            if (!slot) return runningTotal;
+
+            els.playerSide.classList.remove('active');
+            els.botSide.classList.remove('active');
+            sideEl.classList.add('active');
+
+            els.turnLabel.innerHTML = 'Сейчас ход<strong>' + label + '</strong>';
+            els.statusLine.textContent = label + ' открывает контейнер #' + (index + 1) + '…';
+
+            slot.classList.add('highlight');
+            await sleep(400);
+            slot.classList.add('opening');
+            await sleep(500);
+            slot.classList.remove('opening');
+            slot.classList.add('opened');
+            slot.classList.remove('highlight');
+
+            const value = parseMoney(slot.querySelector('.car-value').textContent);
+            runningTotal += value;
+            totalEl.textContent = formatMoney(runningTotal);
+            bumpTotal(totalEl);
+
+            await sleep(OPEN_MS);
+            sideEl.classList.remove('active');
+            return runningTotal;
+        }
+
+        function buildTurnOrder(firstTurn) {
+            const order = [];
+            const ft = firstTurn === 'bot' ? 'bot' : 'player';
+            for (let i = 0; i < 5; i++) {
+                if (ft === 'player') {
+                    order.push({ side: 'player', index: i });
+                    order.push({ side: 'bot', index: i });
+                } else {
+                    order.push({ side: 'bot', index: i });
+                    order.push({ side: 'player', index: i });
+                }
+            }
+            return order;
+        }
+
+        async function playCoinFlip(config) {
+            const isPvp = isPvpDuel(config);
+            const pick = config.coin_pick;
+            const result = config.coin_result;
+            if (!pick && !result) return;
+
+            const effectivePick = pick || 'heads';
+            const effectiveResult = result || effectivePick;
+            const won = effectivePick === effectiveResult;
+
+            els.coinSmallHeads.src = IMG_OREL;
+            els.coinSmallTails.src = IMG_RESHKA;
+            els.coinPickHeads.classList.remove('active', 'result');
+            els.coinPickTails.classList.remove('active', 'result');
+            els.coinPickHeads.classList.toggle('active', effectivePick === 'heads');
+            els.coinPickTails.classList.toggle('active', effectivePick === 'tails');
+
+            els.coinSmallHeads.classList.add('coin-side-spin');
+            els.coinSmallTails.classList.add('coin-side-spin');
+
+            els.coinMain.classList.remove('land');
+            els.coinMain.src = IMG_OREL;
+            els.coinMain.classList.add('spinning');
+            els.coinResultText.textContent = '';
+            els.coinResultSub.textContent = '';
+
+            els.coinOverlay.classList.add('show', 'spinning-phase');
+            els.badge.textContent = 'Монетка';
+            els.turnLabel.innerHTML = 'Бросок<strong>монетки</strong>';
+            els.statusLine.textContent = 'Выбор зрителя: ' + coinSideLabel(effectivePick);
+            els.coinResultText.textContent = 'Крутим монетку…';
+
+            let flipHeads = true;
+            const spinStart = performance.now();
+            while (performance.now() - spinStart < COIN_SPIN_MS) {
+                const elapsed = performance.now() - spinStart;
+                const progress = elapsed / COIN_SPIN_MS;
+                flipHeads = !flipHeads;
+                els.coinMain.src = flipHeads ? IMG_RESHKA : IMG_OREL;
+                const delay = 65 + progress * progress * 360;
+                await sleep(delay);
+            }
+
+            els.coinOverlay.classList.remove('spinning-phase');
+            els.coinSmallHeads.classList.remove('coin-side-spin');
+            els.coinSmallTails.classList.remove('coin-side-spin');
+            els.coinMain.classList.remove('spinning');
+            els.coinMain.src = coinSideImg(effectiveResult);
+            void els.coinMain.offsetWidth;
+            els.coinMain.classList.add('land');
+
+            const resultItem = effectiveResult === 'tails' ? els.coinPickTails : els.coinPickHeads;
+            resultItem.classList.add('result');
+
+            els.coinResultText.textContent = 'Выпало: ' + coinSideLabel(effectiveResult);
+            els.coinResultSub.textContent = won
+                ? (isPvp ? (formatDisplayName(config.username) + ' ходит первым') : 'Угадал! Зритель ходит первым')
+                : (isPvp ? (getOpponentLabel(config) + ' ходит первым') : 'Не угадал — бот ходит первым');
+
+            const firstPlayerName = won
+                ? formatDisplayName(config.username)
+                : (isPvp ? getOpponentLabel(config) : 'бот');
+            const coinSpeech = narrator
+                ? narrator.announceCoin({
+                    coin_side: coinSideLabel(effectiveResult).toLowerCase(),
+                    first_player: firstPlayerName,
+                    is_pvp: isPvp,
+                    guessed: won,
+                })
+                : Promise.resolve();
+
+            await Promise.all([sleep(COIN_RESULT_MS), coinSpeech]);
+            els.coinOverlay.classList.remove('show');
+            els.coinMain.classList.remove('land');
+        }
+
+        async function runDuel(config) {
+            if (playing) {
+                if (!resetPlayingIfStuck()) return;
+            }
+            const duelId = config.id || config.round_id || 0;
+            if (duelId > 0 && duelId <= lastAckedId) {
+                setDebug('дуэль #' + duelId + ' уже показана · ack>' + lastAckedId);
+                await dismissDuel(duelId);
+                return;
+            }
+            playing = true;
+            playingSince = Date.now();
+            if (narrator) narrator.cancel();
+            hideStandby();
+
+            try {
+            const username = config.username || 'Зритель';
+            const betSeconds = config.bet_seconds || 1800;
+            const pvp = isPvpDuel(config);
+            const opponentLabel = getOpponentLabel(config);
+            const challengerLabel = formatDisplayName(username);
+            const playerPrizes = normalizePrizeList(config.player_prizes, 5);
+            const botPrizes = normalizePrizeList(config.bot_prizes, 5);
+
+            showWidgetUi();
+            fitObsLayout();
+            els.resultBanner.className = 'result-banner';
+            els.resultBanner.textContent = '';
+            els.playerName.textContent = challengerLabel;
+            els.opponentName.textContent = pvp ? opponentLabel.replace(/^@/, '') : 'БОТ';
+            els.opponentIcon.textContent = pvp ? '👤' : '🤖';
+            els.betPill.textContent = 'Ставка: ' + formatBetMinutes(betSeconds) + (pvp ? ' · PvP' : '');
+            els.playerTotal.textContent = formatMoney(0);
+            els.botTotal.textContent = formatMoney(0);
+            els.badge.textContent = pvp ? 'Дуэль зрителей' : 'Дуэль идёт';
+            els.hint.textContent = pvp
+                ? 'Победитель забирает обе ставки (x' + (config.win_multiplier || 2) + ')'
+                : 'Победитель забирает ' + (config.win_multiplier ? 'x' + config.win_multiplier : 'x2') + ' ставки';
+
+            buildContainers(els.playerContainers, playerPrizes);
+            buildContainers(els.botContainers, botPrizes);
+
+            els.statusLine.textContent = 'Контейнеры загружены. Бросаем монетку…';
+
+            await sleep(600);
+            await playCoinFlip(config);
+
+            els.badge.textContent = 'Дуэль идёт';
+            els.statusLine.textContent = 'Начинаем открывать контейнеры!';
+
+            let playerSum = 0;
+            let botSum = 0;
+
+            await sleep(800);
+
+            const turns = buildTurnOrder(config.first_turn);
+            for (let t = 0; t < turns.length; t++) {
+                const turn = turns[t];
+                const label = turn.side === 'player'
+                    ? challengerLabel
+                    : (pvp ? opponentLabel : 'БОТ');
+                const sideEl = turn.side === 'player' ? els.playerSide : els.botSide;
+                const totalEl = turn.side === 'player' ? els.playerTotal : els.botTotal;
+                if (turn.side === 'player') {
+                    playerSum = await openContainer('player', turn.index, playerSum, totalEl, sideEl, label);
+                } else {
+                    botSum = await openContainer('bot', turn.index, botSum, totalEl, sideEl, label);
+                }
+                if (t < turns.length - 1) await sleep(BETWEEN_MS);
+            }
+
+            els.turnLabel.innerHTML = 'Итог<strong>—</strong>';
+            els.badge.textContent = 'Финал';
+
+            const winner = config.winner || (playerSum > botSum ? 'player' : (botSum > playerSum ? 'bot' : 'draw'));
+            let resultText;
+            let resultClass;
+            if (winner === 'player') {
+                const winAmount = betSeconds * (config.win_multiplier || 2);
+                resultText = '🏆 ' + challengerLabel + ' победил! +' + formatBetMinutes(winAmount) + ' рефки';
+                resultClass = 'result-banner show win-player';
+                spawnConfetti(['#22d3ee', '#67e8f9', '#fbbf24', '#34d399']);
+                els.statusLine.textContent = formatMoney(playerSum) + ' vs ' + formatMoney(botSum) + ' — ' + challengerLabel + ' впереди!';
+            } else if (winner === 'bot') {
+                if (pvp) {
+                    const winAmount = betSeconds * (config.win_multiplier || 2);
+                    resultText = '🏆 ' + opponentLabel + ' победил! +' + formatBetMinutes(winAmount) + ' рефки';
+                    resultClass = 'result-banner show win-bot';
+                    els.statusLine.textContent = formatMoney(botSum) + ' vs ' + formatMoney(playerSum) + ' — ' + opponentLabel + ' впереди!';
+                } else {
+                    resultText = '🤖 БОТ победил! Ставка ' + formatBetMinutes(betSeconds) + ' сгорела';
+                    resultClass = 'result-banner show win-bot';
+                    els.statusLine.textContent = formatMoney(botSum) + ' vs ' + formatMoney(playerSum) + ' — бот забрал ставку';
+                }
+            } else {
+                resultText = pvp
+                    ? '🤝 Ничья! Обе ставки возвращены'
+                    : '🤝 Ничья! Ставка возвращена';
+                resultClass = 'result-banner show draw';
+                els.statusLine.textContent = 'Одинаковая сумма: ' + formatMoney(playerSum);
+            }
+
+            els.resultBanner.className = resultClass;
+            els.resultBanner.textContent = resultText;
+
+            let prizeText = '';
+            if (winner === 'player') {
+                prizeText = formatBetMinutes(betSeconds * (config.win_multiplier || 2)) + ' рефки';
+            } else if (winner === 'bot' && pvp) {
+                prizeText = formatBetMinutes(betSeconds * (config.win_multiplier || 2)) + ' рефки';
+            }
+
+            const victorySpeech = narrator
+                ? narrator.announceVictory({
+                    winner: winner,
+                    player_name: challengerLabel,
+                    opponent_name: opponentLabel,
+                    is_pvp: pvp,
+                    prize_text: prizeText,
+                })
+                : Promise.resolve();
+
+            await Promise.all([sleep(RESULT_MS), victorySpeech]);
+
+            rememberAckedId(duelId);
+            hideWidgetUi();
+            hideStandby();
+            await finishDuel(duelId);
+            if (!DEMO) {
+                try {
+                    const res = await fetch(API + '?_=' + Date.now());
+                    const data = await res.json();
+                    if (data.mode === 'duel') {
+                        const staleId = data.id || data.round_id || 0;
+                        if (staleId > 0 && staleId <= lastAckedId) {
+                            await dismissDuel(staleId);
+                        }
+                    } else {
+                        syncCooldownFromApi(data.cooldown_remaining, data.cooldown_total);
+                        refreshStandbyCooldown();
+                    }
+                } catch (e) { /* network */ }
+            }
+
+            if (DEMO) {
+                setTimeout(startDemoLoop, 3000);
+            }
+            } catch (err) {
+                setDebug('runDuel: ' + (err && err.message ? err.message : err));
+                standbyMode = 'error';
+                if (SHOW_STANDBY) {
+                    showStandby('Ошибка виджета · ждём новую дуэль');
+                } else {
+                    hideStandby();
+                }
+                hideWidgetUi();
+            } finally {
+                playing = false;
+                playingSince = 0;
+                if (!DEMO && !els.widget.classList.contains('visible')) {
+                    hideStandby();
+                    hideWidgetUi();
+                }
+            }
+        }
+
+        function startDemoLoop() {
+            if (playing) return;
+            runDuel({
+                username: 'demo_player',
+                bet_seconds: 30 * 60,
+                win_multiplier: 2,
+                coin_pick: 'heads',
+                coin_result: 'heads',
+                first_turn: 'player',
+                winner: 'player',
+                player_prizes: Array.from({ length: 5 }, rollVehicle),
+                bot_prizes: Array.from({ length: 5 }, rollVehicle),
+            });
+        }
+
+        async function pollApi() {
+            if (DEMO) return;
+            resetPlayingIfStuck();
+            if (playing) return;
+            try {
+                const res = await fetch(API + '?_=' + Date.now());
+                const data = await res.json();
+                if (data.mode === 'duel') {
+                    const duelId = data.id || data.round_id || 0;
+                    if (duelId > 0 && duelId <= lastAckedId) {
+                        await dismissDuel(duelId);
+                        return;
+                    }
+                    await runDuel(data);
+                    return;
+                }
+                syncCooldownFromApi(data.cooldown_remaining, data.cooldown_total);
+                standbyMode = 'idle';
+                hideStandby();
+                hideWidgetUi();
+                setDebug('API: hidden · КД ' + getCooldownRemainingSec() + 'с · ack>' + lastAckedId);
+            } catch (e) {
+                setDebug('API ошибка: ' + e.message);
+                standbyMode = 'offline';
+                if (SHOW_STANDBY) {
+                    showStandby('Нет связи с API · повтор…');
+                } else {
+                    hideStandby();
+                }
+            }
+        }
+
+        fitObsLayout();
+        window.addEventListener('resize', fitObsLayout);
+        hideWidgetUi();
+        hideStandby();
+        document.body.addEventListener('obs-widget-resume', function () {
+            if (playing) {
+                if (!resetPlayingIfStuck()) return;
+            }
+            pollApi();
+        });
+        if (SHOW_STANDBY) {
+            showStandby('Контейнеры · подключение…');
+        }
+        setDebug((DEMO ? 'демо' : 'ожидание') + ' · ' + WIDGET_ASSETS_VERSION + voiceDebugSuffix());
+        if (DEMO) {
+            hideStandby();
+            els.widget.classList.add('visible');
+            els.statusLine.textContent = 'Демо запустится через секунду…';
+            setTimeout(startDemoLoop, 1000);
+        } else {
+            pollApi();
+            setInterval(pollApi, 800);
+            setInterval(refreshStandbyCooldown, 1000);
+        }
+    </script>
+</body>
+</html>

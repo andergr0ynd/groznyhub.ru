@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Розыгрыш</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/widgets.css?v=obs4">
+    <style>
+        * { box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+            font-family: "Inter", "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body.mode-obs {
+            height: 100%;
+            overflow: hidden;
+            background: transparent !important;
+            min-height: 100%;
+        }
+
+        body.mode-obs::before,
+        body.mode-obs::after {
+            display: none !important;
+        }
+
+        body.mode-control {
+            padding: 24px 16px 40px;
+        }
+
+        .mode-control .control-only { display: block; }
+        .mode-obs .control-only { display: none !important; }
+        .mode-control .obs-only { display: none !important; }
+
+        .hidden { display: none !important; }
+
+        /* —— OBS компакт 300×200 —— */
+        .widget {
+            width: 300px;
+            height: 200px;
+            display: none;
+            pointer-events: none;
+        }
+
+        .widget.visible { display: block; }
+
+        .obs-panel {
+            width: 300px;
+            height: 200px;
+            border-radius: 12px;
+            padding: 8px 12px 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .obs-panel.winner-mode {
+            /* gh-panel--gold applied via JS class toggle */
+        }
+
+        .obs-head {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #e9d5ff;
+            text-align: center;
+            line-height: 1.1;
+            margin-bottom: 2px;
+            text-shadow: 0 0 16px rgba(167, 139, 250, 0.4);
+        }
+
+        .obs-panel.winner-mode .obs-head { color: #fde68a; text-shadow: 0 0 16px rgba(251, 191, 36, 0.35); }
+
+        .obs-keyword-label {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.48);
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        .obs-keyword {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(15px, 6vw, 21px);
+            font-weight: 800;
+            line-height: 1.1;
+            text-align: center;
+            word-break: break-word;
+            overflow: hidden;
+            padding: 0 2px;
+            color: #fff;
+            text-shadow: 0 0 14px rgba(167, 139, 250, 0.35);
+        }
+
+        .obs-panel.winner-mode .obs-keyword {
+            font-size: clamp(14px, 5.5vw, 20px);
+            color: #fde68a;
+            text-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+        }
+
+        .obs-footer {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+        }
+
+        .obs-stat { text-align: center; min-width: 0; }
+
+        .obs-stat-label {
+            display: block;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.52);
+            margin-bottom: 2px;
+        }
+
+        .obs-stat-value {
+            display: block;
+            font-size: 15px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            color: #fef3c7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .obs-divider {
+            width: 1px;
+            height: 22px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* —— Панель управления (как админка / сайт) —— */
+        .control-shell {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .control-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 1.75rem 1.5rem;
+            box-shadow: var(--shadow-panel);
+        }
+
+        .control-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .control-header .badge-inline {
+            display: inline-block;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            background: var(--twitch-purple-soft);
+            border: 1px solid rgba(145, 70, 255, 0.35);
+            color: #c4b5fd;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .control-header h1 {
+            font-size: 1.65rem;
+            font-weight: 800;
+            margin-bottom: 0.35rem;
+            background: var(--gradient-brand);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .control-header p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: stretch;
+            margin-bottom: 1rem;
+        }
+
+        .form-row input[type="text"],
+        .form-row input[type="number"] {
+            flex: 1 1 160px;
+            min-width: 0;
+        }
+
+        .form-row input[type="number"] {
+            flex: 0 1 140px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 560px) {
+            .stat-grid { grid-template-columns: 1fr; }
+        }
+
+        .stat-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.85rem 0.75rem;
+            text-align: center;
+        }
+
+        .stat-card .label {
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.35rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .stat-card .value.accent { color: #c4b5fd; }
+        .stat-card .value.timer {
+            color: var(--radmir-gold);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .entries {
+            max-height: 220px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .participants-card {
+            margin-top: 1rem;
+            padding: 1rem 1rem 0.85rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+        }
+
+        .participants-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+        }
+
+        .participants-head h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .participants-count {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+        }
+
+        .entrant-row {
+            display: grid;
+            grid-template-columns: 28px 1fr auto;
+            gap: 8px;
+            align-items: center;
+            padding: 0.5rem 0.65rem;
+            border-radius: var(--radius-sm);
+            background: rgba(145, 70, 255, 0.08);
+            border: 1px solid rgba(167, 139, 250, 0.18);
+            font-size: 0.86rem;
+        }
+
+        .entrant-row.winner-pick {
+            background: rgba(255, 201, 51, 0.1);
+            border-color: rgba(255, 201, 51, 0.28);
+        }
+
+        .entrant-num {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .entrant-user {
+            font-weight: 700;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .entrant-row.winner-pick .entrant-user {
+            color: var(--radmir-gold);
+        }
+
+        .entrant-time {
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+
+        .entries-empty {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            padding: 1rem 0.5rem;
+        }
+
+        .entrant-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px 4px 10px;
+            border-radius: 999px;
+            background: rgba(145, 70, 255, 0.12);
+            border: 1px solid rgba(167, 139, 250, 0.28);
+            font-size: 0.82rem;
+            color: var(--text-primary);
+        }
+
+        .actions-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .actions-row .btn { flex: 1 1 auto; min-width: 140px; }
+
+        .winner-card {
+            margin-top: 1.25rem;
+            padding: 1.25rem;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 201, 51, 0.06);
+            border: 1px solid rgba(255, 201, 51, 0.22);
+        }
+
+        .winner-name {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--radmir-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 0.85rem;
+        }
+
+        .status-pill.waiting {
+            background: rgba(255, 201, 51, 0.12);
+            border: 1px solid rgba(255, 201, 51, 0.28);
+            color: #fde68a;
+        }
+
+        .status-pill.ok {
+            background: rgba(0, 245, 147, 0.1);
+            border: 1px solid rgba(0, 245, 147, 0.28);
+            color: var(--success);
+        }
+
+        .messages {
+            max-height: 200px;
+            overflow: auto;
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.65rem 0.85rem;
+        }
+
+        .msg {
+            padding: 0.45rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .msg:last-child { border-bottom: none; }
+
+        .msg time {
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            margin-right: 8px;
+        }
+
+        .msg.empty {
+            color: var(--text-secondary);
+            font-style: italic;
+            text-align: center;
+            border: none;
+        }
+
+        .error-box {
+            margin-top: 0.85rem;
+            color: #fca5a5;
+            font-size: 0.88rem;
+            min-height: 1.2em;
+            text-align: center;
+        }
+
+        .winner-log-card {
+            margin-top: 1.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 1.25rem 1.25rem 1rem;
+            box-shadow: var(--shadow-panel);
+        }
+
+        .winner-log-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 0.85rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .winner-log-head h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .winner-log-count {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.2rem 0.55rem;
+        }
+
+        .winner-log-list {
+            list-style: none;
+            max-height: 320px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .winner-log-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 6px 12px;
+            align-items: start;
+            padding: 0.75rem 0.85rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
+        .winner-log-user {
+            font-weight: 800;
+            color: var(--radmir-gold);
+            font-size: 0.95rem;
+        }
+
+        .winner-log-meta {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .winner-log-meta span strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .winner-log-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .winner-log-badge {
+            display: inline-block;
+            padding: 0.15rem 0.45rem;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            background: rgba(0, 245, 147, 0.1);
+            border: 1px solid rgba(0, 245, 147, 0.22);
+            color: var(--success);
+        }
+
+        .winner-log-badge.muted {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border);
+            color: var(--text-secondary);
+        }
+
+        .winner-log-empty {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            padding: 1.25rem 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- OBS -->
+    <div class="widget obs-only" id="obsWidget">
+        <div class="obs-panel gh-panel--twitch" id="obsPanel">
+            <div class="obs-head" id="obsHead">Розыгрыш</div>
+            <div class="obs-keyword-label" id="obsKeywordLabel">Кодовое слово</div>
+            <div class="obs-keyword" id="obsKeyword">—</div>
+            <div class="obs-footer">
+                <div class="obs-stat">
+                    <span class="obs-stat-label">Участников</span>
+                    <span class="obs-stat-value" id="obsParticipants">0</span>
+                </div>
+                <div class="obs-divider"></div>
+                <div class="obs-stat">
+                    <span class="obs-stat-label" id="obsTimeLabel">Время</span>
+                    <span class="obs-stat-value" id="obsTime">—</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель управления -->
+    <div class="control-shell control-only">
+        <div class="control-card">
+            <div class="control-header">
+                <div class="badge-inline">Mark Grozny · Widget</div>
+                <h1>🎁 Розыгрыш</h1>
+                <p>Кодовое слово в чат → выбор победителя → смотри, за сколько ответил → перевыбор при необходимости.</p>
+            </div>
+
+            <div id="startBlock">
+                <div class="form-row">
+                    <input type="text" id="keywordInput" placeholder="Кодовое слово" maxlength="80">
+                    <input type="number" id="durationInput" placeholder="Мин. (опц.)" min="1" max="180">
+                    <button type="button" class="btn btn-primary" id="btnStart">Старт</button>
+                </div>
+            </div>
+
+            <div id="activeBlock" class="hidden">
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="label">Слово</div>
+                        <div class="value accent" id="statKeyword">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Участников</div>
+                        <div class="value" id="statParticipants">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Сбор</div>
+                        <div class="value timer" id="statEntryTimer">—</div>
+                    </div>
+                </div>
+                <div class="actions-row">
+                    <button type="button" class="btn btn-primary" id="btnPick">🎲 Выбрать победителя</button>
+                    <button type="button" class="btn btn-danger" id="btnStop">⏹ Остановить</button>
+                </div>
+            </div>
+
+            <div id="participantsBlock" class="participants-card hidden">
+                <div class="participants-head">
+                    <h3>👥 Участники</h3>
+                    <span class="participants-count" id="participantsCount">0</span>
+                </div>
+                <div class="entries" id="entriesList">
+                    <div class="entries-empty">Пока никого — пусть пишут кодовое слово в чат</div>
+                </div>
+            </div>
+
+            <div id="winnerBlock" class="winner-card hidden">
+                <div class="winner-name" id="winnerName">@winner</div>
+                <span class="status-pill waiting" id="winnerStatus">Ждём ответ…</span>
+                <div class="stat-grid" style="margin-top:0">
+                    <div class="stat-card" style="grid-column: 1 / -1">
+                        <div class="label" id="responseTimerLabel">Ждёт уже</div>
+                        <div class="value timer" id="responseTimer">—</div>
+                    </div>
+                </div>
+                <div class="messages" id="winnerMessages">
+                    <div class="msg empty">Сообщения победителя появятся здесь…</div>
+                </div>
+                <div class="actions-row">
+                    <button type="button" class="btn btn-secondary highlight" id="btnRepick">🔄 Перевыбрать</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirm">✅ Подтвердить</button>
+                </div>
+            </div>
+
+            <div class="error-box" id="errorBox"></div>
+        </div>
+
+        <div class="winner-log-card">
+            <div class="winner-log-head">
+                <h2>🏆 История победителей</h2>
+                <span class="winner-log-count" id="winnerLogCount">0</span>
+            </div>
+            <ul class="winner-log-list" id="winnerLogList">
+                <li class="winner-log-empty">Пока нет завершённых розыгрышей</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="obs-widget.js?v=3"></script>
+    <script>
+        const SITE_ORIGIN = new URL('..', window.location.href).href.replace(/\/$/, '');
+        const IS_CONTROL = new URLSearchParams(window.location.search).get('control') === '1';
+
+        document.body.classList.add(IS_CONTROL ? 'mode-control' : 'mode-obs');
+
+        let state = { mode: 'hidden' };
+        let busy = false;
+        const WINNER_HIDE_MS = 20000;
+        let dismissedWinnerRound = 0;
+        let winnerHideTimer = null;
+
+        const els = {
+            startBlock: document.getElementById('startBlock'),
+            activeBlock: document.getElementById('activeBlock'),
+            winnerBlock: document.getElementById('winnerBlock'),
+            keywordInput: document.getElementById('keywordInput'),
+            durationInput: document.getElementById('durationInput'),
+            statKeyword: document.getElementById('statKeyword'),
+            statParticipants: document.getElementById('statParticipants'),
+            statEntryTimer: document.getElementById('statEntryTimer'),
+            participantsBlock: document.getElementById('participantsBlock'),
+            participantsCount: document.getElementById('participantsCount'),
+            entriesList: document.getElementById('entriesList'),
+            winnerName: document.getElementById('winnerName'),
+            winnerStatus: document.getElementById('winnerStatus'),
+            responseTimerLabel: document.getElementById('responseTimerLabel'),
+            responseTimer: document.getElementById('responseTimer'),
+            winnerMessages: document.getElementById('winnerMessages'),
+            errorBox: document.getElementById('errorBox'),
+            obsWidget: document.getElementById('obsWidget'),
+            obsPanel: document.getElementById('obsPanel'),
+            obsHead: document.getElementById('obsHead'),
+            obsKeywordLabel: document.getElementById('obsKeywordLabel'),
+            obsKeyword: document.getElementById('obsKeyword'),
+            obsParticipants: document.getElementById('obsParticipants'),
+            obsTimeLabel: document.getElementById('obsTimeLabel'),
+            obsTime: document.getElementById('obsTime'),
+            winnerLogList: document.getElementById('winnerLogList'),
+            winnerLogCount: document.getElementById('winnerLogCount'),
+        };
+
+        function formatElapsedText(seconds) {
+            seconds = Math.max(0, Math.floor(seconds || 0));
+            if (seconds < 60) return `${seconds} сек`;
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            if (s === 0) return `${m} мин`;
+            return `${m} мин ${s} сек`;
+        }
+
+        function getLiveElapsedSeconds(data) {
+            if (data.responded || data.mode === 'responded') {
+                return data.response_elapsed_seconds ?? null;
+            }
+            if (data.winner_picked_at) {
+                return Math.max(0, Math.floor(Date.now() / 1000) - data.winner_picked_at);
+            }
+            return data.response_elapsed_seconds ?? null;
+        }
+
+        function formatTime(seconds) {
+            seconds = Math.max(0, Math.floor(seconds || 0));
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${String(s).padStart(2, '0')}`;
+        }
+
+        function formatMsgTime(raw) {
+            if (!raw) return '';
+            const d = new Date(String(raw).replace(' ', 'T'));
+            if (Number.isNaN(d.getTime())) return raw;
+            return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function setError(text) {
+            els.errorBox.textContent = text || '';
+        }
+
+        async function fetchState() {
+            const res = await fetch(`${SITE_ORIGIN}/api/raffle_state.php?_=${Date.now()}`, { cache: 'no-store' });
+            return res.json();
+        }
+
+        async function postAction(action, extra = {}) {
+            if (busy) return null;
+            busy = true;
+            setError('');
+            try {
+                const res = await fetch(`${SITE_ORIGIN}/api/raffle_action.php`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, ...extra }),
+                });
+                const data = await res.json();
+                if (!data.success) setError(data.error || 'Ошибка');
+                if (data.state) render(data.state);
+                return data;
+            } catch (e) {
+                setError('Сеть недоступна. Войди на сайт как админ.');
+                return null;
+            } finally {
+                busy = false;
+            }
+        }
+
+        function renderMessages(messages) {
+            if (!messages || messages.length === 0) {
+                els.winnerMessages.innerHTML = '<div class="msg empty">Пока нет сообщений от победителя…</div>';
+                return;
+            }
+            els.winnerMessages.innerHTML = messages.map(m => `
+                <div class="msg"><time>${formatMsgTime(m.created_at)}</time>${escapeHtml(m.message)}</div>
+            `).join('');
+            els.winnerMessages.scrollTop = els.winnerMessages.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function renderEntriesList(entries, winnerUsername) {
+            const list = entries || [];
+            const winner = (winnerUsername || '').toLowerCase();
+            els.participantsCount.textContent = String(list.length);
+
+            if (!list.length) {
+                els.entriesList.innerHTML = '<div class="entries-empty">Пока никого — пусть пишут кодовое слово в чат</div>';
+                return;
+            }
+
+            els.entriesList.innerHTML = list.map((entry, index) => {
+                const user = (entry.username || '').toLowerCase();
+                const isWinner = winner && user === winner;
+                return `
+                    <div class="entrant-row${isWinner ? ' winner-pick' : ''}">
+                        <span class="entrant-num">${index + 1}</span>
+                        <span class="entrant-user">@${escapeHtml(entry.username)}${isWinner ? ' 🏆' : ''}</span>
+                        <span class="entrant-time">${formatMsgTime(entry.created_at)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderWinnerLog(items) {
+            const list = items || [];
+            els.winnerLogCount.textContent = String(list.length);
+            if (!list.length) {
+                els.winnerLogList.innerHTML = '<li class="winner-log-empty">Пока нет завершённых розыгрышей</li>';
+                return;
+            }
+            els.winnerLogList.innerHTML = list.map((item) => {
+                const responseBadge = item.responded
+                    ? `<span class="winner-log-badge">за ${escapeHtml(item.response_elapsed_text || '—')}</span>`
+                    : '<span class="winner-log-badge muted">без ответа</span>';
+                return `
+                    <li class="winner-log-item">
+                        <div class="winner-log-user">@${escapeHtml(item.winner_username)}</div>
+                        <div class="winner-log-time">${escapeHtml(item.finished_label || '—')}</div>
+                        <div class="winner-log-meta">
+                            <span>Слово: <strong>«${escapeHtml(item.keyword)}»</strong></span>
+                            <span>Участников: <strong>${Number(item.participants || 0)}</strong></span>
+                            ${responseBadge}
+                        </div>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function render(data) {
+            state = data || { mode: 'hidden' };
+            const mode = state.mode || 'hidden';
+            const collecting = mode === 'collecting' || mode === 'active';
+            const hasWinner = ['awaiting_response', 'responded'].includes(mode) && state.winner_username;
+            const showParticipants = mode !== 'hidden' && mode !== 'done';
+
+            if (IS_CONTROL) {
+                renderWinnerLog(data.winner_log);
+                els.startBlock.classList.toggle('hidden', collecting || hasWinner);
+                els.activeBlock.classList.toggle('hidden', !collecting);
+                els.participantsBlock.classList.toggle('hidden', !showParticipants);
+                els.winnerBlock.classList.toggle('hidden', !hasWinner);
+
+                if (showParticipants) {
+                    renderEntriesList(state.entries, hasWinner ? state.winner_username : null);
+                }
+
+                if (collecting) {
+                    els.statKeyword.textContent = state.keyword || '—';
+                    els.statParticipants.textContent = String(state.participants || 0);
+                    els.statEntryTimer.textContent = state.entry_seconds_left != null
+                        ? formatTime(state.entry_seconds_left)
+                        : '∞';
+                }
+
+                if (hasWinner) {
+                    els.winnerName.textContent = `@${state.winner_username}`;
+                    const responded = state.responded || mode === 'responded';
+                    const elapsed = getLiveElapsedSeconds(state);
+                    const elapsedText = state.response_elapsed_text || (elapsed != null ? formatElapsedText(elapsed) : null);
+
+                    els.winnerStatus.textContent = responded
+                        ? (elapsedText ? `Ответил за ${elapsedText} ✅` : 'Ответил ✅')
+                        : 'Ждём ответ в чат…';
+                    els.winnerStatus.className = 'status-pill ' + (responded ? 'ok' : 'waiting');
+
+                    els.responseTimerLabel.textContent = responded ? 'Ответил за' : 'Ждёт уже';
+                    els.responseTimer.textContent = elapsedText || '—';
+                    renderMessages(state.winner_messages || []);
+                    document.getElementById('btnRepick').disabled = responded;
+                }
+            } else {
+                const mode = state.mode || 'hidden';
+                const responded = state.responded || mode === 'responded';
+                const hasWinner = ['awaiting_response', 'responded'].includes(mode) && state.winner_username;
+
+                if (mode === 'hidden' || mode === 'done') {
+                    dismissedWinnerRound = 0;
+                    if (winnerHideTimer) {
+                        clearTimeout(winnerHideTimer);
+                        winnerHideTimer = null;
+                    }
+                } else if (hasWinner && responded && dismissedWinnerRound !== state.round_id) {
+                    if (!winnerHideTimer) {
+                        winnerHideTimer = setTimeout(function () {
+                            winnerHideTimer = null;
+                            dismissedWinnerRound = state.round_id || 0;
+                            els.obsWidget.classList.remove('visible');
+                            if (window.obsWidgetBoot) {
+                                window.obsWidgetBoot.markHidden(els.obsWidget);
+                            }
+                        }, WINNER_HIDE_MS);
+                    }
+                }
+
+                const showObs = mode !== 'hidden' && mode !== 'done'
+                    && dismissedWinnerRound !== state.round_id;
+                els.obsWidget.classList.toggle('visible', showObs);
+                if (showObs && window.obsWidgetBoot) {
+                    window.obsWidgetBoot.markShown(els.obsWidget);
+                } else if (window.obsWidgetBoot) {
+                    window.obsWidgetBoot.markHidden(els.obsWidget);
+                }
+                els.obsPanel.classList.toggle('winner-mode', !!hasWinner);
+                els.obsPanel.classList.toggle('gh-panel--gold', !!hasWinner);
+                els.obsPanel.classList.toggle('gh-panel--twitch', !hasWinner);
+
+                if (!showObs) return;
+
+                els.obsParticipants.textContent = String(state.participants || 0);
+
+                if (collecting) {
+                    els.obsHead.textContent = 'Розыгрыш';
+                    els.obsKeywordLabel.textContent = 'Кодовое слово';
+                    els.obsKeyword.textContent = `«${state.keyword || '—'}»`;
+                    els.obsTimeLabel.textContent = 'Время';
+                    els.obsTime.textContent = state.entry_seconds_left != null
+                        ? formatTime(state.entry_seconds_left)
+                        : '∞';
+                } else if (hasWinner) {
+                    const elapsed = getLiveElapsedSeconds(state);
+                    const elapsedText = state.response_elapsed_text || (elapsed != null ? formatElapsedText(elapsed) : '—');
+                    const responded = state.responded || mode === 'responded';
+
+                    els.obsHead.textContent = responded ? 'Победитель' : 'Розыгрыш';
+                    els.obsKeywordLabel.textContent = responded ? 'Ответил' : 'Победитель';
+                    els.obsKeyword.textContent = `@${state.winner_username}`;
+                    els.obsTimeLabel.textContent = responded ? 'За' : 'Ждёт';
+                    els.obsTime.textContent = elapsedText;
+                }
+            }
+        }
+
+        async function poll() {
+            if (busy) return;
+            try {
+                render(await fetchState());
+            } catch (e) { /* ignore */ }
+        }
+
+        document.getElementById('btnStart').addEventListener('click', async () => {
+            const keyword = els.keywordInput.value.trim();
+            if (!keyword) {
+                setError('Введи кодовое слово');
+                return;
+            }
+            const mins = parseInt(els.durationInput.value, 10);
+            const payload = { keyword };
+            if (!Number.isNaN(mins) && mins > 0) payload.duration_seconds = mins * 60;
+            await postAction('start', payload);
+        });
+
+        document.getElementById('btnStop').addEventListener('click', () => postAction('stop'));
+        document.getElementById('btnPick').addEventListener('click', () => postAction('pick', { round_id: state.round_id }));
+        document.getElementById('btnRepick').addEventListener('click', () => postAction('repick', { round_id: state.round_id }));
+        document.getElementById('btnConfirm').addEventListener('click', () => postAction('confirm', { round_id: state.round_id }));
+
+        poll();
+        setInterval(poll, 500);
+        if (!IS_CONTROL) {
+            document.body.addEventListener('obs-widget-resume', function () {
+                if (busy) return;
+                poll();
+            });
+            if (window.obsWidgetBoot) {
+                window.obsWidgetBoot.markHidden(els.obsWidget);
+            }
+        }
+        setInterval(() => {
+            if (busy) return;
+            if (IS_CONTROL) {
+                if (!state.winner_username) return;
+                if (state.responded || state.mode === 'responded') return;
+                if (!['awaiting_response', 'responded'].includes(state.mode)) return;
+            } else {
+                if (!state.winner_username && state.mode !== 'collecting' && state.mode !== 'active') return;
+            }
+            render(state);
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# Включение mod_rewrite
+RewriteEngine On
+
+# HTTPS временно отключён (битый SSL-сертификат на хостинге).
+# Когда выпустишь Let's Encrypt в reg.ru — раскомментируй блок ниже.
+# RewriteCond %{HTTPS} !=on
+# RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+# RewriteCond %{HTTP:X-Forwarded-SSL} !on
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Защита конфигурационных файлов
+<FilesMatch "^(config\.php|database\.sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Установка кодировки по умолчанию
+AddDefaultCharset UTF-8
+
+# Короткие ссылки на профили: /u/nick
+RewriteRule ^u/([a-zA-Z0-9_]+)/og\.png$ u/og.php?nick=$1 [L,QSA,NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^u/([a-zA-Z0-9_]+)/?$ u/index.php?nick=$1 [L,QSA,NC]
+
+# Настройки PHP
+php_value session.gc_maxlifetime 86400
+php_value session.cookie_lifetime 86400
+

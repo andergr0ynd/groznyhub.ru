@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Fly · Test</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        .sky {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .sky.showing { opacity: 1; }
+
+        .plane {
+            position: absolute;
+            width: 130px;
+            height: auto;
+            z-index: 5;
+            filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
+            will-change: left, top;
+        }
+
+        .plane img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .plane.back img {
+            transform: scaleX(-1);
+        }
+
+        .contrail {
+            position: absolute;
+            z-index: 2;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(196, 181, 253, 0.55);
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+            opacity: 0;
+            animation: puffFade 1.1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes puffFade {
+            0% { opacity: 0.75; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.2); }
+        }
+
+        .toast {
+            position: absolute;
+            z-index: 4;
+            width: min(300px, 38vw);
+            opacity: 0;
+            pointer-events: none;
+            will-change: left, top, transform, opacity;
+        }
+
+        .toast.in {
+            animation: toastPop 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .toast.out {
+            animation: toastOut 0.36s ease forwards;
+        }
+
+        .toast.trail-right { transform-origin: right center; }
+        .toast.trail-left { transform-origin: left center; }
+
+        @keyframes toastPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.45) translateX(28px);
+            }
+            70% {
+                opacity: 1;
+                transform: scale(1.04) translateX(-4px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateX(0);
+            }
+        }
+
+        .toast.trail-left.in {
+            animation-name: toastPopLeft;
+        }
+
+        @keyframes toastPopLeft {
+            0% {
+                opacity: 0;
+                transform: scale(0.45) translateX(-28px);
+            }
+            70% {
+                opacity: 1;
+                transform: scale(1.04) translateX(4px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateX(0);
+            }
+        }
+
+        @keyframes toastOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.82) translateY(-10px); }
+        }
+
+        .toast-panel {
+            position: relative;
+            border-radius: 14px;
+            padding: 10px 11px;
+            background: linear-gradient(160deg, rgba(18, 10, 36, 0.96), rgba(8, 8, 14, 0.95));
+            border: 2px solid rgba(167, 139, 250, 0.32);
+            box-shadow: 0 12px 32px rgba(40, 12, 80, 0.5);
+            color: #fff;
+        }
+
+        .toast-panel::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 22px;
+            height: 2px;
+            transform: translateY(-50%);
+            background: linear-gradient(90deg, rgba(167, 139, 250, 0.1), rgba(167, 139, 250, 0.65));
+            border-radius: 2px;
+        }
+
+        .toast.trail-right .toast-panel::before {
+            right: -20px;
+            background: linear-gradient(90deg, rgba(167, 139, 250, 0.65), rgba(167, 139, 250, 0.1));
+        }
+
+        .toast.trail-left .toast-panel::before {
+            left: -20px;
+            background: linear-gradient(90deg, rgba(167, 139, 250, 0.1), rgba(167, 139, 250, 0.65));
+        }
+
+        .toast-panel.hot-purple { border-color: rgba(167, 139, 250, 0.45); }
+        .toast-panel.hot-gold { border-color: rgba(251, 191, 36, 0.38); }
+        .toast-panel.hot-cyan { border-color: rgba(34, 211, 238, 0.35); }
+        .toast-panel.hot-pink { border-color: rgba(236, 72, 153, 0.38); }
+
+        .card {
+            display: grid;
+            grid-template-columns: 42px 1fr;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 20px;
+            overflow: hidden;
+        }
+
+        .card-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .card-title {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.68);
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 999px;
+            font-size: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .badge.live {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #86efac;
+        }
+
+        .badge.sale {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            color: #fde68a;
+        }
+
+        .badge.duel {
+            background: rgba(34, 211, 238, 0.12);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            color: #a5f3fc;
+        }
+
+        .card-cmd {
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .card-cmd .hl { color: #c4b5fd; }
+        .card-cmd .kw { color: #fde68a; }
+
+        .card-desc {
+            font-size: 10px;
+            line-height: 1.35;
+            color: rgba(255, 255, 255, 0.56);
+        }
+
+        .variant-tag, #obs-debug {
+            position: fixed;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.65);
+            font-size: 11px;
+            font-family: Consolas, monospace;
+            z-index: 9;
+            display: none;
+        }
+
+        .variant-tag { top: 8px; left: 8px; color: #a5f3fc; }
+        #obs-debug { left: 8px; bottom: 8px; color: #4ade80; max-width: 420px; }
+        .variant-tag.on, #obs-debug.on { display: block; }
+    </style>
+</head>
+<body>
+    <div class="sky" id="sky">
+        <div class="plane forward" id="plane">
+            <img src="../icons/fly.gif" alt="">
+        </div>
+
+        <div class="toast trail-right" id="toast">
+            <div class="toast-panel" id="toastPanel">
+                <div class="card">
+                    <div class="card-icon" id="cardIcon">⏱</div>
+                    <div class="card-body">
+                        <div class="card-top">
+                            <span class="card-title" id="cardTitle">Рефка</span>
+                            <span class="badge" id="cardBadge"></span>
+                        </div>
+                        <div class="card-cmd" id="cardCmd"></div>
+                        <div class="card-desc" id="cardDesc"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="variant-tag" id="variantTag"></div>
+    <div id="obs-debug"></div>
+
+    <script>
+        const SITE_ORIGIN = window.location.origin || 'https://groznyhub.ru';
+        const params = new URLSearchParams(location.search);
+        const DEBUG = params.get('debug') === '1';
+
+        const CYCLE_MS = Math.max(30, parseInt(params.get('cycle') || '900', 10) || 900) * 1000;
+        const FLY_MS = Math.max(8000, parseInt(params.get('fly') || '20000', 10) || 20000);
+        const HOLD_MS = Math.max(1200, parseInt(params.get('hold') || '3000', 10) || 3000);
+        const TRANSITION_MS = 360;
+        const FIRST_DELAY_MS = Math.max(0, parseInt(params.get('start') || '5', 10) || 5) * 1000;
+
+        const CARD_KEYS = ['refka', 'raffle', 'containers', 'case'];
+        // Когда показывать каждое уведомление (% полёта, от старта)
+        const NOTIF_AT = [0.22, 0.42, 0.62, 0.82];
+        let flyForward = false;
+
+        const els = {
+            sky: document.getElementById('sky'),
+            plane: document.getElementById('plane'),
+            toast: document.getElementById('toast'),
+            toastPanel: document.getElementById('toastPanel'),
+            cardIcon: document.getElementById('cardIcon'),
+            cardTitle: document.getElementById('cardTitle'),
+            cardBadge: document.getElementById('cardBadge'),
+            cardCmd: document.getElementById('cardCmd'),
+            cardDesc: document.getElementById('cardDesc'),
+            variantTag: document.getElementById('variantTag'),
+            debug: document.getElementById('obs-debug'),
+        };
+
+        if (DEBUG) {
+            els.debug.classList.add('on');
+            els.variantTag.classList.add('on');
+        }
+
+        let lastState = null;
+        let cycleRunning = false;
+        let cycleTimer = null;
+        let nextCycleAt = 0;
+        let flyFrame = null;
+        let currentVariant = 1;
+        let toastFollowing = false;
+        let lastPuffAt = 0;
+        let planePos = { left: 0, top: 0 };
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function escapeHtml(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function formatTime(seconds) {
+            const s = Math.max(0, Math.floor(seconds || 0));
+            return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+        }
+
+        function formatCooldown(seconds) {
+            const s = Math.max(0, Math.floor(seconds || 0));
+            if (s < 60) return s + ' сек';
+            const m = Math.floor(s / 60);
+            const r = s % 60;
+            return r > 0 ? m + ' мин ' + r + ' сек' : m + ' мин';
+        }
+
+        function easeInOutSine(t) {
+            return -(Math.cos(Math.PI * t) - 1) / 2;
+        }
+
+        function getNextDirection() {
+            if (params.get('forward') === '1') return true;
+            if (params.get('forward') === '0') return false;
+            flyForward = !flyForward;
+            return flyForward;
+        }
+
+        function isForward(forward) {
+            return !!forward;
+        }
+
+        /** progress 0 = слева за экраном, 1 = справа за экраном */
+        function planePosition(progress) {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const pw = els.plane.offsetWidth || 130;
+            const laneY = h * 0.78 - 50;
+            const pad = 40;
+            const start = -pw - pad;
+            const travel = w + pad * 2 + pw;
+            const eased = easeInOutSine(Math.max(0, Math.min(1, progress)));
+            return { left: start + travel * eased, top: laneY, pw };
+        }
+
+        function setPlaneProgress(progress, forward) {
+            planePos = planePosition(progress);
+            els.plane.style.left = planePos.left + 'px';
+            els.plane.style.top = planePos.top + 'px';
+            els.plane.className = 'plane ' + (forward ? 'forward' : 'back');
+        }
+
+        function spawnPuff(x, y) {
+            const now = performance.now();
+            if (now - lastPuffAt < 120) return;
+            lastPuffAt = now;
+            const puff = document.createElement('div');
+            puff.className = 'contrail';
+            puff.style.left = (x - 4) + 'px';
+            puff.style.top = (y + 28) + 'px';
+            els.sky.appendChild(puff);
+            puff.addEventListener('animationend', () => puff.remove());
+        }
+
+        function updateTrailPosition(forward) {
+            const pw = els.plane.offsetWidth || 130;
+            const ph = els.plane.offsetHeight || 90;
+            const tw = els.toast.offsetWidth || 280;
+            const th = els.toast.offsetHeight || els.toast.getBoundingClientRect().height || 68;
+            const gap = 16;
+
+            const inCls = els.toast.classList.contains('in') ? ' in' : '';
+            const outCls = els.toast.classList.contains('out') ? ' out' : '';
+
+            if (isForward(forward)) {
+                els.toast.className = 'toast trail-right' + inCls + outCls;
+                let left = planePos.left - tw - gap;
+                left = Math.max(12, Math.min(left, window.innerWidth - tw - 12));
+                els.toast.style.left = left + 'px';
+            } else {
+                els.toast.className = 'toast trail-left' + inCls + outCls;
+                let left = planePos.left + pw + gap;
+                left = Math.max(12, Math.min(left, window.innerWidth - tw - 12));
+                els.toast.style.left = left + 'px';
+            }
+
+            // по вертикали — по центру пингвина
+            const top = planePos.top + (ph - th) / 2;
+            els.toast.style.top = top + 'px';
+        }
+
+        function startFlight(forward, flightStart) {
+            return new Promise(resolve => {
+                const tick = (now) => {
+                    const elapsed = now - flightStart;
+                    const t = Math.min(1, elapsed / FLY_MS);
+                    const progress = forward ? t : (1 - t);
+                    setPlaneProgress(progress, forward);
+
+                    const pw = els.plane.offsetWidth || 130;
+                    const puffX = isForward(forward)
+                        ? planePos.left + 10
+                        : planePos.left + pw - 10;
+                    spawnPuff(puffX, planePos.top);
+
+                    if (toastFollowing) {
+                        updateTrailPosition(forward);
+                    }
+
+                    if (t < 1) {
+                        flyFrame = requestAnimationFrame(tick);
+                    } else {
+                        flyFrame = null;
+                        resolve();
+                    }
+                };
+                flyFrame = requestAnimationFrame(tick);
+            });
+        }
+
+        function stopFlight() {
+            if (flyFrame) {
+                cancelAnimationFrame(flyFrame);
+                flyFrame = null;
+            }
+        }
+
+        function buildCardPayload(key, data) {
+            const cfg = data.config || {};
+            const stream = data.stream || {};
+            const raffle = data.raffle || {};
+            const containers = data.containers || {};
+            const caseState = data.case || {};
+            const isLive = !!stream.is_live;
+            const exampleKw = cfg.raffle_example_keyword || 'Скин';
+
+            const payloads = {
+                refka: {
+                    icon: '⏱', iconImg: null, title: 'Рефка', badge: '', badgeClass: '',
+                    cmdHtml: '<span class="hl">!startrefka</span>',
+                    desc: 'Копи время в чате · <span class="hl">!бонус</span> каждый день',
+                    hot: isLive ? 'hot-purple' : '',
+                },
+                raffle: {
+                    icon: '🎁', iconImg: null, title: 'Розыгрыш', badge: 'ожидание', badgeClass: '',
+                    cmdHtml: 'Напиши <span class="kw">«' + escapeHtml(exampleKw) + '»</span>',
+                    desc: 'Участвуй в розыгрыше на скин', hot: '',
+                },
+                containers: {
+                    icon: null, iconImg: '../icons/conteinerclose.png', title: 'Контейнеры',
+                    badge: isLive ? 'готово' : 'оффлайн', badgeClass: isLive ? 'live' : '',
+                    cmdHtml: '<span class="hl">!контейнер ' + (cfg.containers_min_minutes || 30) + ' @ник</span>',
+                    desc: isLive ? 'Дуэль на машины · орёл / решка' : 'Только во время стрима',
+                    hot: containers.mode === 'active' ? 'hot-cyan' : '',
+                },
+                case: {
+                    icon: null, iconImg: '../icons/3.png', title: 'Кейс',
+                    badge: String(caseState.cost_minutes ?? cfg.case_cost_minutes ?? 90) + ' мин',
+                    badgeClass: '', cmdHtml: '<span class="hl">!купить кейс</span>',
+                    desc: 'Купи кейс за накопленное время · нужен !startrefka', hot: '',
+                },
+            };
+
+            const p = payloads[key];
+            const raffleCollecting = ['collecting', 'active'].includes(raffle.mode);
+            const raffleWinner = ['awaiting_response', 'responded'].includes(raffle.mode);
+
+            if (key === 'raffle') {
+                if (raffleCollecting && raffle.keyword) {
+                    p.badge = 'идёт'; p.badgeClass = 'live';
+                    p.cmdHtml = 'Напиши <span class="kw">«' + escapeHtml(raffle.keyword) + '»</span>';
+                    const parts = [];
+                    if (raffle.participants != null) parts.push(raffle.participants + ' участников');
+                    if (raffle.entry_seconds_left != null) parts.push('сбор ' + formatTime(raffle.entry_seconds_left));
+                    p.desc = parts.length ? parts.join(' · ') : p.desc;
+                    p.hot = 'hot-purple';
+                } else if (raffleWinner && raffle.keyword) {
+                    p.badge = 'победитель'; p.badgeClass = 'live';
+                    p.cmdHtml = 'Слово: <span class="kw">«' + escapeHtml(raffle.keyword) + '»</span>';
+                    p.desc = (raffle.participants || 0) + ' участников · ждём ответ';
+                    p.hot = 'hot-gold';
+                } else if (raffle.active) {
+                    p.hot = 'hot-purple';
+                }
+            }
+
+            if (key === 'containers') {
+                if (containers.mode === 'active') {
+                    p.badge = 'дуэль'; p.badgeClass = 'duel';
+                    p.desc = 'Дуэль на машины в эфире'; p.hot = 'hot-cyan';
+                } else if ((containers.cooldown_remaining || 0) > 0) {
+                    p.badge = 'кд';
+                    p.desc = 'Перерыв ' + formatCooldown(containers.cooldown_remaining);
+                }
+            }
+
+            if (key === 'case') {
+                const costMin = caseState.cost_minutes ?? cfg.case_cost_minutes ?? 90;
+                if (caseState.mode === 'sale') {
+                    p.badge = formatTime(caseState.seconds_left);
+                    p.badgeClass = 'sale';
+                    p.desc = 'Продажа открыта · ' + costMin + ' мин рефки';
+                    p.hot = 'hot-pink';
+                } else {
+                    p.badge = costMin + ' мин';
+                }
+            }
+
+            return p;
+        }
+
+        function fillToast(key, data) {
+            const p = buildCardPayload(key, data);
+            els.cardTitle.textContent = p.title;
+            els.cardCmd.innerHTML = p.cmdHtml;
+            els.cardDesc.innerHTML = p.desc;
+            els.toastPanel.className = 'toast-panel' + (p.hot ? ' ' + p.hot : '');
+
+            if (p.badge) {
+                els.cardBadge.textContent = p.badge;
+                els.cardBadge.className = 'badge' + (p.badgeClass ? ' ' + p.badgeClass : '');
+                els.cardBadge.style.display = '';
+            } else {
+                els.cardBadge.style.display = 'none';
+            }
+
+            if (p.iconImg) {
+                els.cardIcon.innerHTML = '<img src="' + p.iconImg + '" alt="">';
+            } else {
+                els.cardIcon.textContent = p.icon;
+            }
+        }
+
+        async function showToast(key, data, forward) {
+            fillToast(key, data);
+            toastFollowing = true;
+            updateTrailPosition(forward);
+            els.toast.classList.remove('out');
+            void els.toast.offsetWidth;
+            els.toast.classList.add('in');
+        }
+
+        async function hideToast() {
+            els.toast.classList.remove('in');
+            els.toast.classList.add('out');
+            await sleep(TRANSITION_MS);
+            els.toast.classList.remove('out');
+            toastFollowing = false;
+        }
+
+        async function waitUntil(targetMs) {
+            const wait = targetMs - performance.now();
+            if (wait > 0) await sleep(wait);
+        }
+
+        async function runCycle() {
+            if (cycleRunning) return;
+            cycleRunning = true;
+
+            const forward = getNextDirection();
+            currentVariant = forward ? 1 : 2;
+
+            els.toast.className = 'toast ' + (forward ? 'trail-right' : 'trail-left');
+            els.toast.classList.remove('in', 'out');
+            toastFollowing = false;
+
+            if (DEBUG) {
+                els.variantTag.textContent = forward ? 'вперёд · L→R · низ' : 'назад · R→L · низ';
+            }
+
+            const data = lastState || await fetchState();
+
+            const startProgress = forward ? 0 : 1;
+            setPlaneProgress(startProgress, forward);
+
+            els.sky.classList.add('showing');
+            const flightStart = performance.now();
+
+            const flightPromise = startFlight(forward, flightStart);
+
+            for (let i = 0; i < CARD_KEYS.length; i++) {
+                await waitUntil(flightStart + NOTIF_AT[i] * FLY_MS);
+                await showToast(CARD_KEYS[i], data, forward);
+                await sleep(HOLD_MS);
+                await hideToast();
+            }
+
+            await flightPromise;
+            await sleep(250);
+
+            els.sky.classList.remove('showing');
+            els.sky.querySelectorAll('.contrail').forEach(el => el.remove());
+            stopFlight();
+            cycleRunning = false;
+            scheduleNextCycle();
+        }
+
+        function scheduleNextCycle() {
+            if (cycleTimer) clearTimeout(cycleTimer);
+            nextCycleAt = Date.now() + CYCLE_MS;
+            cycleTimer = setTimeout(runCycle, CYCLE_MS);
+            updateDebug();
+        }
+
+        function updateDebug() {
+            if (!DEBUG) return;
+            els.debug.textContent = JSON.stringify({
+                cycle_sec: CYCLE_MS / 1000,
+                fly_sec: FLY_MS / 1000,
+                next_in_sec: Math.max(0, Math.ceil((nextCycleAt - Date.now()) / 1000)),
+                next_dir: flyForward ? 'вперёд' : 'назад',
+                last_dir: currentVariant === 1 ? 'вперёд' : 'назад',
+                running: cycleRunning,
+            }, null, 0);
+        }
+
+        async function fetchState() {
+            const res = await fetch(SITE_ORIGIN + '/api/hub_state.php?_=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        }
+
+        async function poll() {
+            try { lastState = await fetchState(); }
+            catch (e) { if (DEBUG) els.debug.textContent = 'err: ' + e.message; }
+        }
+
+        poll();
+        setInterval(poll, 1200);
+        if (DEBUG) setInterval(updateDebug, 500);
+        setTimeout(runCycle, FIRST_DELAY_MS);
+    </script>
+</body>
+</html>

@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roulette Widget</title>
+    <link rel="stylesheet" href="../css/widgets.css?v=obs26">
+    <style>
+        .widget { min-width: 720px; min-height: 420px; background: transparent; }
+        .panel { width: min(720px, 100%); padding: 16px 18px 18px; }
+        .table-stage {
+            position: relative;
+            width: 100%;
+            margin: 8px auto 12px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+        }
+        .table-canvas {
+            position: relative;
+            width: 100%;
+            line-height: 0;
+        }
+        .table-img {
+            display: block;
+            width: 100%;
+            height: auto;
+            user-select: none;
+            pointer-events: none;
+        }
+        .chips-layer,
+        .calibration-layer,
+        .number-flash,
+        .drum-zone {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .chips-layer { pointer-events: none; z-index: 3; }
+        .bet-chip {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.55));
+            transition: filter 0.2s ease;
+            z-index: 3;
+        }
+        .bet-chip.winning { z-index: 6; filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.75)); }
+        .bet-chip__pin {
+            position: relative;
+            width: 48px;
+            height: 48px;
+        }
+        .bet-chip.winning .bet-chip__pin { transform: scale(1.1); }
+        .bet-chip__avatar {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% - 8px);
+            transform: translateX(-50%);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #fde68a;
+            background: rgba(15, 23, 42, 0.92);
+            object-fit: cover;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+        }
+        .bet-chip__initial {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: #fde68a;
+        }
+        .bet-chip__fishka {
+            display: block;
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+        .bet-chip__meta {
+            position: absolute;
+            top: calc(100% + 3px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            pointer-events: none;
+        }
+        .bet-chip__num {
+            padding: 2px 7px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            white-space: nowrap;
+        }
+        .bet-chip__user {
+            max-width: 72px;
+            font-size: 9px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.88);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+        }
+        .calibration-layer {
+            pointer-events: none;
+            z-index: 7;
+        }
+        .calibration-dot {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid #fbbf24;
+            background: rgba(251, 191, 36, 0.35);
+            font-size: 8px;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 1px 2px #000;
+        }
+        .drum-zone {
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .drum-zone__inner {
+            position: absolute;
+            left: calc(4.5% - 10mm);
+            top: calc(19% + 20mm);
+            width: 30%;
+            height: 58%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: normal;
+        }
+        .drum-label {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.72);
+            margin-bottom: 6px;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+        }
+        .drum-window {
+            position: relative;
+            width: 88px;
+            height: 88px;
+            overflow: hidden;
+            border-radius: 16px;
+            border: 3px solid rgba(251, 191, 36, 0.65);
+            box-shadow:
+                inset 0 0 24px rgba(0, 0, 0, 0.55),
+                0 0 22px rgba(251, 191, 36, 0.18);
+            background: rgba(0, 0, 0, 0.35);
+        }
+        .drum-window::before,
+        .drum-window::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 24px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .drum-window::before {
+            top: 0;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent);
+        }
+        .drum-window::after {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
+        }
+        .drum-pointer {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 76px;
+            height: 3px;
+            margin: -1px 0 0 -38px;
+            background: rgba(251, 191, 36, 0.9);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.65);
+            z-index: 3;
+            border-radius: 2px;
+        }
+        .drum-strip { will-change: transform; }
+        .drum-cell {
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+        }
+        .drum-cell.green { background: linear-gradient(180deg, #22c55e, #15803d); }
+        .drum-cell.red { background: linear-gradient(180deg, #ef4444, #991b1b); }
+        .drum-cell.black { background: linear-gradient(180deg, #4b5563, #111827); }
+        .drum-result {
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fde68a;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+            min-height: 18px;
+        }
+        .number-flash {
+            border: 3px solid transparent;
+            border-radius: 14px;
+            pointer-events: none;
+            z-index: 2;
+            box-sizing: border-box;
+        }
+        .number-flash.active { animation: flashPulse 0.35s ease; }
+        @keyframes flashPulse {
+            0%, 100% { box-shadow: inset 0 0 0 0 rgba(251, 191, 36, 0); }
+            50% { box-shadow: inset 0 0 40px 8px rgba(251, 191, 36, 0.35); }
+        }
+        .hud-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .bank { font-size: 28px; margin: 0; }
+        .timer { font-size: 42px; margin: 4px 0 8px; }
+        .meta { margin-bottom: 6px; }
+        .hint { font-size: 13px; color: rgba(255,255,255,0.58); margin-top: 8px; }
+        .hidden { display: none !important; }
+        .winner-block { text-align: center; margin-top: 10px; }
+        .win-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            font-size: 34px;
+            font-weight: 900;
+            color: #fff;
+            margin: 8px 0;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 24px rgba(251, 191, 36, 0.25);
+        }
+        .win-number.green { background: linear-gradient(145deg, #16a34a, #15803d); }
+        .win-number.red { background: linear-gradient(145deg, #dc2626, #991b1b); }
+        .win-number.black { background: linear-gradient(145deg, #374151, #111827); }
+        .winner-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .winner-chip {
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            font-size: 13px;
+            color: #fde68a;
+        }
+        .no-win { color: rgba(255, 255, 255, 0.65); font-size: 15px; margin-top: 6px; }
+        .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+        .confetti span {
+            position: absolute; top: -12px; width: 8px; height: 14px;
+            border-radius: 2px; opacity: 0.9; animation: fall linear forwards;
+        }
+        @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="widget" id="widget">
+        <div class="panel gh-panel--gold">
+            <div class="badge gh-badge--gold" id="badge">Рулетка 0–36</div>
+            <div class="hud-row">
+                <div>
+                    <div class="title" id="title">Ставки открыты</div>
+                    <div class="subtitle" id="subtitle">Банк игры · x36</div>
+                </div>
+                <div class="bank" id="bank">0м</div>
+            </div>
+            <div class="meta"><span id="participants">👥 0 игроков</span></div>
+            <div class="table-stage" id="tableStage">
+                <div class="table-canvas" id="tableCanvas">
+                    <img class="table-img" src="../icons/ryletka36.png" alt="Рулетка">
+                    <div class="drum-zone" id="drumZone">
+                        <div class="drum-zone__inner">
+                            <div class="drum-label" id="drumLabel">Барабан</div>
+                            <div class="drum-window">
+                                <div class="drum-pointer"></div>
+                                <div class="drum-strip" id="drumStrip"></div>
+                            </div>
+                            <div class="drum-result" id="drumResult"></div>
+                        </div>
+                    </div>
+                    <div class="number-flash" id="numberFlash"></div>
+                    <div class="calibration-layer hidden" id="calibrationLayer"></div>
+                    <div class="chips-layer" id="chipsLayer"></div>
+                </div>
+            </div>
+            <div class="timer" id="timer">120</div>
+            <div class="progress"><span id="progressBar"></span></div>
+            <div class="winner-block hidden" id="winnerBlock">
+                <div class="subtitle">Выпало</div>
+                <div class="win-number" id="winNumber">0</div>
+                <div class="winner-list" id="winnerList"></div>
+                <div class="no-win hidden" id="noWin">Никто не угадал</div>
+            </div>
+            <div class="hint" id="hint">!ставка 17 · !ставка 30 1,27,17 · фишки: зел &lt;30м · син 30–59м · крас ≥60м</div>
+        </div>
+    </div>
+
+    <div class="confetti" id="confetti"></div>
+    <div id="obs-debug"></div>
+    <script src="obs-widget.js?v=5"></script>
+    <script>
+        const SITE_ORIGIN = new URL('..', window.location.href).href.replace(/\/$/, '');
+        const API = SITE_ORIGIN + '/api/jackpot_state.php';
+        const API_ACK = SITE_ORIGIN + '/api/jackpot_ack.php';
+        const DEBUG = /[?&]debug=1/.test(window.location.search);
+        const CALIBRATE = DEBUG || /[?&]calibrate=1/.test(window.location.search);
+        const DEMO = /[?&]demo=1/.test(window.location.search);
+        const DEMO_ACTIVE_SEC = 14;
+        const DEMO_DRAW_SEC = 3;
+        const POLL_MS = 500;
+        const WINNER_MS = 7000;
+        const SPIN_MS = 8500;
+        const DRUM_CELL_H = 58;
+        const WHEEL_ORDER = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+        // Прямые % от ryletka36.png (1024×576), сняты с центров красных/чёрных ячеек
+        const Y_DIVISION = 0.85;
+        const ROW_SHIFT_DIVISIONS = [4, 2, 2];
+        const ZERO_SHIFT_DIVISIONS = 2;
+        const ROW_TOPS_BASE = [26.30, 41.10, 46.96];
+        const ZERO_TOP_BASE = 32.52;
+        const ROW_TOPS = ROW_TOPS_BASE.map(function(t, i) {
+            return +(t + ROW_SHIFT_DIVISIONS[i] * Y_DIVISION).toFixed(2);
+        });
+        const COL_LEFTS_BASE = [
+            [39.21, 42.43, 45.65, 48.88, 52.10, 55.42, 58.64, 61.87, 65.09, 68.41, 71.63, 74.85],
+            [39.27, 42.43, 45.70, 48.92, 52.11, 55.47, 58.68, 61.88, 65.15, 68.41, 71.66, 74.81],
+            [39.13, 42.34, 45.58, 48.94, 52.18, 55.52, 58.68, 61.88, 65.07, 68.39, 71.64, 74.83],
+        ];
+        const ROW_COL_STRETCH = [1, 1.035, 1.07];
+        function stretchColLefts(cols, factor) {
+            if (factor === 1) return cols;
+            const mid = cols.reduce(function(s, v) { return s + v; }, 0) / cols.length;
+            return cols.map(function(x) {
+                return +(mid + (x - mid) * factor).toFixed(2);
+            });
+        }
+        const COL_LEFTS = COL_LEFTS_BASE.map(function(cols, ri) {
+            return stretchColLefts(cols, ROW_COL_STRETCH[ri]);
+        });
+        const GRID_ROWS = [
+            [3,6,9,12,15,18,21,24,27,30,33,36],
+            [2,5,8,11,14,17,20,23,26,29,32,35],
+            [1,4,7,10,13,16,19,22,25,28,31,34],
+        ];
+        const NUMBER_POSITIONS = {
+            0: { left: 15.42, top: +(ZERO_TOP_BASE + ZERO_SHIFT_DIVISIONS * Y_DIVISION).toFixed(2) },
+        };
+        GRID_ROWS.forEach(function(row, ri) {
+            row.forEach(function(num, ci) {
+                NUMBER_POSITIONS[num] = { left: COL_LEFTS[ri][ci], top: ROW_TOPS[ri] };
+            });
+        });
+        const NUMBER_ROW = {};
+        const NUMBER_COL = {};
+        GRID_ROWS.forEach(function(row, ri) {
+            row.forEach(function(num, ci) {
+                NUMBER_ROW[num] = ri;
+                NUMBER_COL[num] = ci;
+            });
+        });
+        const CHIP_ANCHOR_SHIFT = { x: 0, y: 0 };
+        const GLOBAL_SHIFT_MM = { x: 0, y: 6 };
+        const ROW_SHIFT_MM = [3.75, -0.48, -1.75];
+        const ROW_SHIFT_MM_X = [0, 0, 1.5];
+        const ROW_COL_SKEW_MM = [0, 0.1, 0];
+        const ZERO_SHIFT_MM = { x: 36, y: 5 };
+        const CHIP_OFFSETS = [
+            { x: 0, y: 0 }, { x: 0.85, y: -0.55 }, { x: -0.85, y: 0.55 },
+            { x: 1.05, y: 0.65 }, { x: -1.0, y: -0.65 }, { x: 0, y: 0.85 },
+        ];
+        const ROULETTE_RED = { 1:1,3:1,5:1,7:1,9:1,12:1,14:1,16:1,18:1,19:1,21:1,23:1,25:1,27:1,30:1,32:1,34:1,36:1 };
+
+        const debugEl = document.getElementById('obs-debug');
+        function setDebug(text) {
+            if (!DEBUG || !debugEl) return;
+            debugEl.textContent = text;
+            debugEl.classList.add('on');
+        }
+
+        function demoNumberColor(n) {
+            n = Number(n);
+            if (n === 0) return 'green';
+            return ROULETTE_RED[n] ? 'red' : 'black';
+        }
+        function demoColorLabel(color) {
+            return { green: 'зелёное', red: 'красное', black: 'чёрное' }[color] || color;
+        }
+        function demoPayoutText(seconds) {
+            seconds = Number(seconds) || 0;
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            if (h > 0 && m > 0) return h + 'ч ' + m + 'м';
+            if (h > 0) return h + 'ч';
+            return Math.max(1, m) + 'м';
+        }
+        function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+        const DEMO_SCENARIOS = [
+            { winning: 17, entries: [
+                { username: 'ander', bet_number: 17, bet_seconds: 1200, bet_text: '20м', chip_icon: 'greenfishka.png' },
+                { username: 'vip_ok', bet_number: 17, bet_seconds: 2700, bet_text: '45м', chip_icon: 'bluefishka.png' },
+                { username: 'whale', bet_number: 0, bet_seconds: 5400, bet_text: '1ч 30м', chip_icon: 'redfishka.png' },
+                { username: 'multi_fan', bet_number: 1, bet_seconds: 1800, bet_text: '30м', chip_icon: 'bluefishka.png' },
+                { username: 'multi_fan', bet_number: 27, bet_seconds: 1800, bet_text: '30м', chip_icon: 'bluefishka.png' },
+                { username: 'multi_fan', bet_number: 17, bet_seconds: 1800, bet_text: '30м', chip_icon: 'bluefishka.png' },
+            ]},
+            { winning: 7, entries: [
+                { username: 'lucky_x', bet_number: 7, bet_seconds: 3600, bet_text: '1ч', chip_icon: 'redfishka.png' },
+                { username: 'newbie', bet_number: 17, bet_seconds: 600, bet_text: '10м', chip_icon: 'greenfishka.png' },
+            ]},
+            { winning: 13, entries: [
+                { username: 'ander', bet_number: 5, bet_seconds: 1500, bet_text: '25м', chip_icon: 'greenfishka.png' },
+                { username: 'vip_ok', bet_number: 36, bet_seconds: 4200, bet_text: '1ч 10м', chip_icon: 'redfishka.png' },
+            ]},
+        ];
+        let demoRoundId = 9000;
+        let demoScenarioIdx = 0;
+        let demoInProgress = false;
+        let drumIdleTimer = null;
+
+        let busy = false;
+        let saleEndsAt = 0;
+        let saleDuration = 120;
+        let timerHandle = null;
+        let lastWinnerRound = 0;
+        let drawingRoundId = 0;
+        try {
+            lastWinnerRound = parseInt(localStorage.getItem('jackpot_last_winner_round') || '0', 10) || 0;
+        } catch (e) { /* private mode */ }
+
+        const els = {
+            widget: document.getElementById('widget'),
+            badge: document.getElementById('badge'),
+            title: document.getElementById('title'),
+            subtitle: document.getElementById('subtitle'),
+            bank: document.getElementById('bank'),
+            participants: document.getElementById('participants'),
+            timer: document.getElementById('timer'),
+            progressBar: document.getElementById('progressBar'),
+            chipsLayer: document.getElementById('chipsLayer'),
+            calibrationLayer: document.getElementById('calibrationLayer'),
+            numberFlash: document.getElementById('numberFlash'),
+            drumStrip: document.getElementById('drumStrip'),
+            drumResult: document.getElementById('drumResult'),
+            drumLabel: document.getElementById('drumLabel'),
+            winnerBlock: document.getElementById('winnerBlock'),
+            winNumber: document.getElementById('winNumber'),
+            winnerList: document.getElementById('winnerList'),
+            noWin: document.getElementById('noWin'),
+            hint: document.getElementById('hint'),
+            confetti: document.getElementById('confetti'),
+            tableCanvas: document.getElementById('tableCanvas'),
+        };
+
+        function mmToPercent(axis, mm) {
+            mm = mm || 0;
+            if (!mm) return 0;
+            const px = mm * (96 / 25.4);
+            const canvas = els.tableCanvas;
+            const size = canvas
+                ? (axis === 'x' ? canvas.offsetWidth : canvas.offsetHeight)
+                : (axis === 'x' ? 720 : 405);
+            if (!size) return 0;
+            return (px / size) * 100;
+        }
+
+        function numberPosition(n) {
+            const pos = NUMBER_POSITIONS[n];
+            if (!pos) return { left: 50, top: 50 };
+            const row = NUMBER_ROW[n];
+            const col = NUMBER_COL[n];
+            const rowMmY = row != null ? (ROW_SHIFT_MM[row] || 0) : 0;
+            const rowMmX = row != null ? (ROW_SHIFT_MM_X[row] || 0) : 0;
+            const skewMax = row != null ? (ROW_COL_SKEW_MM[row] || 0) : 0;
+            const colSkewMmX = skewMax && col != null ? (col / 11) * skewMax : 0;
+            const zeroMmX = n === 0 ? ZERO_SHIFT_MM.x : 0;
+            const zeroMmY = n === 0 ? ZERO_SHIFT_MM.y : 0;
+            return {
+                left: pos.left + CHIP_ANCHOR_SHIFT.x
+                    + mmToPercent('x', GLOBAL_SHIFT_MM.x)
+                    + mmToPercent('x', rowMmX)
+                    + mmToPercent('x', colSkewMmX)
+                    + mmToPercent('x', zeroMmX),
+                top: pos.top + CHIP_ANCHOR_SHIFT.y
+                    + mmToPercent('y', GLOBAL_SHIFT_MM.y)
+                    + mmToPercent('y', rowMmY)
+                    + mmToPercent('y', zeroMmY),
+            };
+        }
+
+        function renderCalibrationDots() {
+            if (!CALIBRATE || !els.calibrationLayer) return;
+            els.calibrationLayer.innerHTML = '';
+            els.calibrationLayer.classList.remove('hidden');
+            Object.keys(NUMBER_POSITIONS).forEach(function(key) {
+                const num = Number(key);
+                const pos = numberPosition(num);
+                const dot = document.createElement('div');
+                dot.className = 'calibration-dot';
+                dot.style.left = pos.left + '%';
+                dot.style.top = pos.top + '%';
+                dot.textContent = String(num);
+                els.calibrationLayer.appendChild(dot);
+            });
+        }
+
+        function hideCalibrationDots() {
+            if (!els.calibrationLayer) return;
+            els.calibrationLayer.classList.add('hidden');
+            els.calibrationLayer.innerHTML = '';
+        }
+
+        function chipIconUrl(icon) {
+            return SITE_ORIGIN + '/icons/' + (icon || 'greenfishka.png');
+        }
+
+        function chipTierIcon(betSeconds) {
+            const s = Number(betSeconds) || 0;
+            if (s >= 3600) return 'redfishka.png';
+            if (s >= 1800) return 'bluefishka.png';
+            return 'greenfishka.png';
+        }
+
+        function avatarHtml(entry) {
+            if (entry.avatar_url) {
+                return '<img class="bet-chip__avatar" src="' + entry.avatar_url + '" alt="">';
+            }
+            const letter = String(entry.username || '?').charAt(0).toUpperCase();
+            return '<span class="bet-chip__avatar bet-chip__initial">' + letter + '</span>';
+        }
+
+        function renderChips(entries, winningNumber) {
+            els.chipsLayer.innerHTML = '';
+            if (CALIBRATE) renderCalibrationDots();
+            const grouped = {};
+            (entries || []).forEach(function(entry) {
+                const num = Number(entry.bet_number);
+                if (!grouped[num]) grouped[num] = [];
+                grouped[num].push(entry);
+            });
+            Object.keys(grouped).forEach(function(key) {
+                const num = Number(key);
+                const list = grouped[num];
+                const pos = numberPosition(num);
+                list.forEach(function(entry, index) {
+                    const off = CHIP_OFFSETS[index % CHIP_OFFSETS.length];
+                    const marker = document.createElement('div');
+                    marker.className = 'bet-chip';
+                    if (winningNumber != null && num === winningNumber) marker.classList.add('winning');
+                    marker.style.left = (pos.left + off.x) + '%';
+                    marker.style.top = (pos.top + off.y) + '%';
+                    const icon = entry.chip_icon || chipTierIcon(entry.bet_seconds);
+                    const user = String(entry.username || '').replace(/^@+/, '');
+                    marker.innerHTML =
+                        '<div class="bet-chip__pin">' +
+                            avatarHtml(entry) +
+                            '<img class="bet-chip__fishka" src="' + chipIconUrl(icon) + '" alt="">' +
+                        '</div>' +
+                        '<div class="bet-chip__meta">' +
+                            '<span class="bet-chip__num">№ ' + num + '</span>' +
+                            '<span class="bet-chip__user">@' + user + '</span>' +
+                        '</div>';
+                    els.chipsLayer.appendChild(marker);
+                });
+            });
+        }
+
+        function buildDrumCell(number) {
+            const cell = document.createElement('div');
+            cell.className = 'drum-cell ' + demoNumberColor(number);
+            cell.textContent = String(number);
+            return cell;
+        }
+
+        function setDrumOffset(offsetPx, animate) {
+            if (animate) {
+                els.drumStrip.style.transition = 'transform ' + SPIN_MS + 'ms cubic-bezier(0.08, 0.02, 0.15, 1)';
+            } else {
+                els.drumStrip.style.transition = 'none';
+            }
+            els.drumStrip.style.transform = 'translateY(-' + offsetPx + 'px)';
+        }
+
+        function drumOffsetForIndex(index) {
+            const windowCenter = 44;
+            return Math.max(0, (index * DRUM_CELL_H) + (DRUM_CELL_H / 2) - windowCenter);
+        }
+
+        function fillDrumStrip(sequence) {
+            els.drumStrip.innerHTML = '';
+            sequence.forEach(function(n) {
+                els.drumStrip.appendChild(buildDrumCell(n));
+            });
+        }
+
+        function stopDrumIdle() {
+            if (drumIdleTimer) {
+                clearInterval(drumIdleTimer);
+                drumIdleTimer = null;
+            }
+        }
+
+        function startDrumIdle() {
+            stopDrumIdle();
+            const seq = [];
+            for (let i = 0; i < 24; i++) {
+                seq.push(WHEEL_ORDER[i % WHEEL_ORDER.length]);
+            }
+            fillDrumStrip(seq);
+            setDrumOffset(0, false);
+            els.drumResult.textContent = '';
+            els.drumLabel.textContent = 'Барабан';
+            let idx = 0;
+            drumIdleTimer = setInterval(function() {
+                idx = (idx + 1) % Math.max(1, seq.length - 2);
+                setDrumOffset(drumOffsetForIndex(idx), true);
+                els.drumStrip.style.transition = 'transform 0.45s linear';
+            }, 480);
+        }
+
+        function spinDrumTo(targetNumber) {
+            return new Promise(function(resolve) {
+                stopDrumIdle();
+                const pool = [];
+                for (let loop = 0; loop < 10; loop++) {
+                    WHEEL_ORDER.forEach(function(n) { pool.push(n); });
+                }
+                pool.push(targetNumber);
+                fillDrumStrip(pool);
+                const stopIndex = pool.length - 1;
+                setDrumOffset(0, false);
+                void els.drumStrip.offsetHeight;
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        setDrumOffset(drumOffsetForIndex(stopIndex), true);
+                    });
+                });
+                els.numberFlash.classList.remove('active');
+                void els.numberFlash.offsetWidth;
+                els.numberFlash.classList.add('active');
+                const color = demoNumberColor(targetNumber);
+                els.drumLabel.textContent = 'Выпало';
+                els.drumResult.textContent = targetNumber + ' · ' + demoColorLabel(color);
+                setTimeout(resolve, SPIN_MS + 350);
+            });
+        }
+
+        function spawnConfetti() {
+            els.confetti.innerHTML = '';
+            const colors = ['#fbbf24', '#f59e0b', '#ef4444', '#22c55e', '#60a5fa'];
+            for (let i = 0; i < 36; i++) {
+                const piece = document.createElement('span');
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.background = colors[i % colors.length];
+                piece.style.animationDuration = (1.8 + Math.random() * 1.5) + 's';
+                piece.style.animationDelay = (Math.random() * 0.5) + 's';
+                els.confetti.appendChild(piece);
+            }
+        }
+
+        function stopTimer() {
+            if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
+        }
+
+        function hideWidget() {
+            stopTimer();
+            stopDrumIdle();
+            hideCalibrationDots();
+            saleEndsAt = 0;
+            drawingRoundId = 0;
+            els.confetti.innerHTML = '';
+            els.widget.classList.remove('visible');
+            els.winnerBlock.classList.add('hidden');
+            els.timer.classList.remove('hidden');
+            els.progressBar.parentElement.classList.remove('hidden');
+            els.drumResult.textContent = '';
+            if (window.obsWidgetBoot) window.obsWidgetBoot.markHidden(els.widget);
+        }
+
+        function showWidget() {
+            els.widget.classList.add('visible');
+            if (window.obsWidgetBoot) window.obsWidgetBoot.markShown(els.widget);
+        }
+
+        function showActive(data) {
+            showWidget();
+            els.badge.textContent = 'Ставки открыты';
+            els.title.textContent = 'Рулетка 0–36';
+            els.subtitle.textContent = 'Банк игры · x' + (data.multiplier || 36) + (data.pot_text ? ' · в игре ' + data.pot_text : '');
+            els.bank.textContent = data.bank_text || '0м';
+            els.participants.textContent = '👥 ' + (data.participants || 0) + ' игроков';
+            renderChips(data.entries || [], null);
+            startDrumIdle();
+            els.winnerBlock.classList.add('hidden');
+            els.timer.classList.remove('hidden');
+            els.progressBar.parentElement.classList.remove('hidden');
+            const defaultMin = Number(data.default_minutes) || 30;
+            els.hint.textContent = data.hint || ('!ставка 17 · !ставка ' + defaultMin + ' 1,27,17 · зел <30м · син 30–59м · крас ≥60м');
+            syncSaleTimer(data, 120);
+            stopTimer();
+            updateCountdown();
+            timerHandle = setInterval(updateCountdown, 200);
+        }
+
+        function syncSaleTimer(data, defaultDuration) {
+            saleDuration = Math.max(1, Number(data.duration_seconds) || defaultDuration);
+            saleEndsAt = Math.floor(Date.now() / 1000) + Math.max(0, Number(data.seconds_left) || 0);
+        }
+
+        function updateCountdown() {
+            if (!saleEndsAt) return;
+            const left = Math.max(0, saleEndsAt - Math.floor(Date.now() / 1000));
+            els.timer.textContent = String(left);
+            els.timer.classList.toggle('urgent', left > 0 && left <= 5);
+            els.progressBar.style.transform = 'scaleX(' + Math.max(0, Math.min(1, saleDuration > 0 ? left / saleDuration : 0)) + ')';
+            if (left <= 0) { stopTimer(); els.timer.textContent = '0'; }
+        }
+
+        function showDrawing(data) {
+            if (busy) return;
+            drawingRoundId = data.round_id || 0;
+            showWidget();
+            els.badge.textContent = 'Розыгрыш';
+            els.title.textContent = 'Крутим барабан...';
+            els.subtitle.textContent = 'Банк: ' + (data.bank_text || '');
+            els.bank.textContent = data.bank_text || '0м';
+            els.participants.textContent = '👥 ' + ((data.entries && data.entries.length) || 0) + ' ставок';
+            renderChips(data.entries || [], null);
+            stopDrumIdle();
+            els.drumLabel.textContent = 'Крутим...';
+            els.winnerBlock.classList.add('hidden');
+            els.timer.classList.add('hidden');
+            els.progressBar.parentElement.classList.add('hidden');
+            els.hint.textContent = 'Шарик выбирает число...';
+            stopTimer();
+        }
+
+        async function ackWinnerRound(roundId) {
+            if (!roundId) return false;
+            try {
+                const res = await fetch(API_ACK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ round_id: roundId }),
+                });
+                const data = await res.json();
+                return !!(data && data.success);
+            } catch (e) { return false; }
+        }
+
+        function rememberWinnerRound(roundId) {
+            lastWinnerRound = roundId;
+            try { localStorage.setItem('jackpot_last_winner_round', String(roundId)); } catch (e) { /* */ }
+        }
+
+        async function showWinner(data, isDemoRun) {
+            isDemoRun = isDemoRun || DEMO;
+            if (!isDemoRun && data.round_id <= lastWinnerRound) {
+                await ackWinnerRound(data.round_id);
+                hideWidget();
+                return;
+            }
+            busy = true;
+            showWidget();
+            els.badge.textContent = 'Розыгрыш';
+            els.title.textContent = 'Крутим барабан...';
+            els.subtitle.textContent = 'Банк: ' + (data.bank_text || '');
+            els.bank.textContent = data.bank_text || '0м';
+            els.timer.classList.add('hidden');
+            els.progressBar.parentElement.classList.add('hidden');
+            els.winnerBlock.classList.add('hidden');
+            els.hint.textContent = 'Определяем число...';
+            stopTimer();
+            renderChips(data.entries || [], null);
+            await spinDrumTo(Number(data.winning_number));
+            const color = data.winning_color || demoNumberColor(data.winning_number);
+            els.badge.textContent = 'Результат';
+            els.title.textContent = 'Выпало ' + data.winning_number;
+            els.subtitle.textContent = (data.winning_color_label || demoColorLabel(color)) + ' · x36';
+            els.winnerBlock.classList.remove('hidden');
+            els.winNumber.textContent = String(data.winning_number);
+            els.winNumber.className = 'win-number ' + color;
+            renderChips(data.entries || [], Number(data.winning_number));
+            const winners = data.winners || [];
+            els.winnerList.innerHTML = '';
+            if (winners.length) {
+                els.noWin.classList.add('hidden');
+                winners.forEach(function(w) {
+                    const chip = document.createElement('span');
+                    chip.className = 'winner-chip';
+                    chip.textContent = '@' + w.username + ' №' + (w.bet_number != null ? w.bet_number : data.winning_number) + ' +' + (w.payout_text || '');
+                    els.winnerList.appendChild(chip);
+                });
+                spawnConfetti();
+            } else {
+                els.noWin.classList.remove('hidden');
+            }
+            await sleep(WINNER_MS);
+            if (!isDemoRun && await ackWinnerRound(data.round_id)) rememberWinnerRound(data.round_id);
+            hideWidget();
+            busy = false;
+            if (isDemoRun) setTimeout(runDemoRound, 3000);
+            else poll();
+        }
+
+        function demoBankText(entries) {
+            return demoPayoutText((entries || []).reduce(function(s, e) { return s + Number(e.bet_seconds || 0); }, 0));
+        }
+
+        async function runDemoRound() {
+            if (busy || demoInProgress || !DEMO) return;
+            demoInProgress = true;
+            const scenario = DEMO_SCENARIOS[demoScenarioIdx % DEMO_SCENARIOS.length];
+            demoScenarioIdx += 1;
+            demoRoundId += 1;
+            const entries = scenario.entries.slice();
+            const bankText = demoBankText(entries);
+            showActive({
+                round_id: demoRoundId,
+                bank_text: bankText,
+                participants: new Set(entries.map(function(e) { return e.username; })).size,
+                entries: entries,
+                seconds_left: DEMO_ACTIVE_SEC,
+                duration_seconds: DEMO_ACTIVE_SEC,
+                default_minutes: 10,
+                hint: 'демо · !ставка 30 1,27,17 · до 3 чисел',
+            });
+            await sleep((DEMO_ACTIVE_SEC + 1) * 1000);
+            showDrawing({ round_id: demoRoundId, bank_text: bankText, entries: entries });
+            await sleep(DEMO_DRAW_SEC * 1000);
+            const winningNumber = scenario.winning;
+            const winners = entries
+                .filter(function(e) { return Number(e.bet_number) === winningNumber; })
+                .map(function(e) {
+                    const payout = Number(e.bet_seconds) * 36;
+                    return {
+                        username: e.username,
+                        bet_number: e.bet_number,
+                        payout_seconds: payout,
+                        payout_text: demoPayoutText(payout),
+                    };
+                });
+            await showWinner({
+                round_id: demoRoundId,
+                winning_number: winningNumber,
+                winning_color: demoNumberColor(winningNumber),
+                winning_color_label: demoColorLabel(demoNumberColor(winningNumber)),
+                bank_text: bankText,
+                entries: entries,
+                winners: winners,
+            }, true);
+            demoInProgress = false;
+        }
+
+        function startDemoLoop() {
+            if (!DEMO) return;
+            setDebug('демо · раунд через 1с');
+            setTimeout(runDemoRound, 1000);
+        }
+
+        async function poll() {
+            if (busy || DEMO) return;
+            try {
+                const data = await fetch(API + '?_=' + Date.now()).then(function(r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                });
+                setDebug('API: ' + data.mode + (data.seconds_left != null ? ' (' + data.seconds_left + 's)' : ''));
+                if (data.mode === 'winner') { await showWinner(data); return; }
+                if (data.mode === 'drawing' && !busy) { showDrawing(data); return; }
+                if (data.mode === 'active' && !busy) { showActive(data); return; }
+                if (!busy) hideWidget();
+            } catch (e) {
+                setDebug('Ошибка API: ' + e.message);
+                console.error(e);
+            }
+        }
+
+        setDebug(DEMO ? 'демо · рулетка 0–36' : 'рулетка загружена');
+        hideWidget();
+        document.body.addEventListener('obs-widget-resume', function() {
+            if (busy || demoInProgress) return;
+            if (DEMO) runDemoRound();
+            else poll();
+        });
+        if (DEMO) startDemoLoop();
+        else { poll(); setInterval(poll, POLL_MS); }
+    </script>
+</body>
+</html>

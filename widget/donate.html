@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Продление сайта · OBS</title>
+    <link rel="stylesheet" href="../css/widgets.css">
+    <style>
+        html, body {
+            background: transparent;
+        }
+
+        .donate-widget {
+            width: min(420px, 100%);
+            pointer-events: none;
+            padding: 10px;
+        }
+
+        .panel {
+            width: 100%;
+            padding: 16px 18px 14px;
+            text-align: center;
+        }
+
+        .disclaimer {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #ffd89a;
+            line-height: 1.35;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .disclaimer-sub {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.72);
+            line-height: 1.35;
+            margin-bottom: 12px;
+        }
+
+        .qr {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 8px;
+            display: block;
+            border-radius: 10px;
+            background: #fff;
+            padding: 6px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .boosty {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--kick-text);
+            letter-spacing: 0.03em;
+        }
+    </style>
+</head>
+<body>
+    <div class="donate-widget">
+        <div class="panel gh-panel--gold">
+            <span class="disclaimer">ЭТО НЕ ДОНАТ СТРИМЕРУ</span>
+            <span class="disclaimer-sub">Только на продление сайта и бота</span>
+            <span class="disclaimer-sub" style="margin-bottom: 10px;">Траты и остаток — в ленте Boosty</span>
+            <img class="qr" src="../icons/icondonate.png" width="160" height="160" alt="QR Boosty">
+            <div class="boosty">boosty.to · groznyhub</div>
+        </div>
+    </div>
+</body>
+</html>

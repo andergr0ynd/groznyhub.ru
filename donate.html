@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Продление сайта и бота - Mark Grozny</title>
+    <link rel="icon" href="icons/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#0e0e10">
+    <meta name="color-scheme" content="dark">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/donate.css">
+</head>
+<body class="donate-page">
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="icons/logo.png" alt="Logo">
+                <span>Mark Grozny</span>
+            </a>
+            <div class="header-right">
+                <a href="index.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Главная</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="donate-main">
+        <div class="donate-wrap fade-in">
+            <div class="donate-disclaimer" role="note">
+                <strong>ЭТО НЕ ДОНАТ СТРИМЕРУ</strong>
+                <span>Всё идёт только на продление сайта и Twitch-бота (хостинг, домен, сервер).</span>
+            </div>
+            <section class="donate-card">
+                <h1>Продление сайта и бота</h1>
+                <p class="donate-lead">Если хотите помочь оплатить инфраструктуру проекта — можно отправить любую сумму через Boosty. Чтоб не попрошайничать эти деньги у Лысого — andergr0ynd 😂</p>
+                <div class="donate-grid">
+                    <div class="donate-qr-block">
+                        <img src="icons/icondonate.png" width="220" height="220" alt="QR-код для оплаты на Boosty" class="donate-qr">
+                        <p class="donate-qr-hint">Отсканируйте камерой или QR-приложением</p>
+                    </div>
+                    <div class="donate-actions">
+                        <a href="https://boosty.to/helperforradmir/single-payment/donation/809580/target?share=target_link" class="btn btn-primary donate-boosty-btn" target="_blank" rel="noopener noreferrer">Поддержать</a>
+                        <p class="donate-url-label">Ссылка:</p>
+                        <div class="donate-url-row">
+                            <input type="text" class="donate-url-input" id="donateUrl" readonly value="https://boosty.to/helperforradmir/single-payment/donation/809580/target?share=target_link">
+                            <button type="button" class="btn btn-secondary" id="copyDonateUrl">Копировать</button>
+                        </div>
+                    </div>
+                </div>
+                <p class="donate-notes">Здесь — исключительно расходы на сайт и бота.</p>
+                <p class="donate-transparency">В ленте новостей на Boosty будут публиковаться все траты и, если останется, остаток средств. Спасибо за поддержку!</p>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p id="footerDateTime"></p>
+            <p style="margin-top: 0.5rem;">
+                <a href="faq.html" class="footer-link">FAQ и правила рефки</a>
+                ·
+                <a href="donate.html" class="footer-link">Продление сайта / бота</a>
+            </p>
+        </div>
+    </footer>
+
+    <nav class="mobile-bottom-nav" aria-label="Навигация">
+        <a href="index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🏠</span><span class="mobile-nav-label">Главная</span></a>
+        <a href="search.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🔍</span><span class="mobile-nav-label">Поиск</span></a>
+        <a href="faq.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">📖</span><span class="mobile-nav-label">FAQ</span></a>
+        <a href="donate.html" class="mobile-nav-link is-active"><span class="mobile-nav-icon" aria-hidden="true">🖧</span><span class="mobile-nav-label">Поддержать</span></a>
+        <a href="Obmen/index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">💰</span><span class="mobile-nav-label">Обмен</span></a>
+        <a href="koleso/index.html" class="mobile-nav-link"><span class="mobile-nav-icon" aria-hidden="true">🎡</span><span class="mobile-nav-label">Колесо</span></a>
+    </nav>
+    <script src="js/main.js"></script>
+    <script>
+        (function () {
+            var btn = document.getElementById('copyDonateUrl');
+            var input = document.getElementById('donateUrl');
+            if (!btn || !input) return;
+            btn.addEventListener('click', function () {
+                var original = btn.textContent;
+                var done = function () {
+                    btn.textContent = 'Скопировано';
+                    setTimeout(function () { btn.textContent = original; }, 2000);
+                };
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(input.value).then(done);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Колесо — Mark Grozny</title>
+  <link rel="icon" href="../icons/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="koleso.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="../index.html" class="logo">
+        <img src="../icons/logo.png" alt="Logo">
+        <span>Mark Grozny</span>
+      </a>
+      <div class="header-right">
+        <a href="../index.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Главная</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wheel-page fade-in">
+    <div class="container wheel-wrap">
+      <div class="wheel-toolbar">
+        <div class="wheel-hero">
+          <h1>🎡 Колесо</h1>
+        </div>
+        <div class="wheel-toolbar-actions">
+          <button type="button" class="btn btn-secondary" id="importBtn">Импортировать</button>
+          <button type="button" class="btn btn-secondary" id="exportBtn">Скачать .txt</button>
+          <input type="file" id="fileInput" accept=".txt,text/plain" hidden>
+        </div>
+      </div>
+
+      <div class="wheel-grid">
+        <aside class="wheel-panel wheel-panel--list">
+          <h2>Участники</h2>
+          <ul class="participants-list" id="itemsList"></ul>
+          <p class="wheel-panel-footer">В колесе — <strong id="count">0</strong></p>
+        </aside>
+
+        <section class="wheel-stage">
+          <div class="wheel-winner empty" id="resultValue">Победитель</div>
+          <p class="wheel-subtitle" id="wheelSubtitle">Pedro · Pedro · Pedro</p>
+          <div class="wheel-box" id="wheelBox">
+            <div class="wheel-glow" aria-hidden="true"></div>
+            <svg class="wheel-frame" viewBox="0 0 520 520" aria-hidden="true">
+              <defs>
+                <linearGradient id="frame-grad" x1="0" y1="0" x2="520" y2="520" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#ffc933"/>
+                  <stop offset="0.35" stop-color="#ff6b1a"/>
+                  <stop offset="0.55" stop-color="#9146ff"/>
+                  <stop offset="0.78" stop-color="#a855f7"/>
+                  <stop offset="1" stop-color="#ffc933"/>
+                </linearGradient>
+                <radialGradient id="stud-grad" cx="50%" cy="35%" r="65%">
+                  <stop offset="0" stop-color="#fff8e7"/>
+                  <stop offset="0.45" stop-color="#ffc933"/>
+                  <stop offset="1" stop-color="#ff6b1a"/>
+                </radialGradient>
+              </defs>
+              <circle class="frame-ring" cx="260" cy="260" r="248"/>
+              <circle class="frame-inner" cx="260" cy="260" r="232"/>
+              <g id="frameStuds"></g>
+            </svg>
+            <canvas id="wheelCanvas" aria-hidden="true"></canvas>
+            <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+            <svg class="wheel-pointer" viewBox="0 0 160 160" aria-hidden="true">
+              <defs>
+                <linearGradient id="ptr-grad" x1="34" y1="14" x2="122" y2="132" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#ffe0b2"/><stop offset="0.3" stop-color="#ff6b1a"/>
+                  <stop offset="0.7" stop-color="#e65100"/><stop offset="1" stop-color="#7f1d00"/>
+                </linearGradient>
+                <linearGradient id="ptr-core" x1="58" y1="34" x2="104" y2="120" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#fff3e0"/><stop offset="0.5" stop-color="#ff8533"/><stop offset="1" stop-color="#bf360c"/>
+                </linearGradient>
+                <linearGradient id="ptr-cap" x1="56" y1="16" x2="104" y2="44" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#fff8e1"/><stop offset="0.5" stop-color="#ff6b1a"/><stop offset="1" stop-color="#bf360c"/>
+                </linearGradient>
+                <filter id="ptr-shadow" x="16" y="6" width="128" height="144" filterUnits="userSpaceOnUse">
+                  <feOffset dy="6"/><feGaussianBlur stdDeviation="6"/>
+                  <feColorMatrix type="matrix" values="0 0 0 0 0.2 0 0 0 0 0.05 0 0 0 0 0 0 0 0 0.35 0"/>
+                </filter>
+              </defs>
+              <g filter="url(#ptr-shadow)">
+                <path d="M80 16L102 31L112 47L102 62L97 84L90 104L80 132L70 104L63 84L58 62L48 47L58 31L80 16Z" fill="url(#ptr-grad)"/>
+              </g>
+              <path d="M80 20L98 33L107 47L98 61L93 82L87 101L80 122L73 101L67 82L62 61L53 47L62 33L80 20Z" fill="url(#ptr-core)" opacity="0.92"/>
+              <path d="M80 20L98 33L89 40L80 35L71 40L62 33L80 20Z" fill="url(#ptr-cap)"/>
+              <path d="M80 16L102 31L112 47L102 62L97 84L90 104L80 132L70 104L63 84L58 62L48 47L58 31L80 16Z" fill="none" stroke="rgba(255,248,225,0.85)" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+            <div class="wheel-core" id="wheelCore">
+              <img id="wheelCoreImg" src="../icons/enotkoleso.gif" alt="" width="120" height="120" decoding="async">
+              <video id="wheelCoreVideo" loop muted playsinline disablePictureInPicture hidden></video>
+            </div>
+            <div class="wheel-empty" id="emptyState">Импортируй .txt или вставь список участников</div>
+          </div>
+        </section>
+
+        <aside class="wheel-panel wheel-controls">
+          <div class="control-group">
+            <div class="spin-row">
+              <button type="button" class="btn btn-primary btn-spin" id="spinBtn" disabled>Крутить</button>
+              <div class="duration-wrap">
+                <input type="number" id="spinDuration" value="20" min="3" max="60" step="1">
+                <span>сек</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <span class="control-label">Анимация и музыка</span>
+            <div class="segmented" id="themeSegmented"></div>
+            <button type="button" class="btn btn-secondary btn-mute" id="muteBtn">Отключить звук</button>
+            <select class="theme-select" id="customThemeSelect" disabled>
+              <option value="">— Свои темы —</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <span class="control-label">Режим</span>
+            <div class="segmented" id="modeSegmented">
+              <button type="button" class="mode-btn active" data-mode="normal">Обычное</button>
+              <button type="button" class="mode-btn" data-mode="dropout">Выбывание</button>
+            </div>
+          </div>
+
+          <details class="wheel-details" id="editPanel">
+            <summary>Своя тема и список</summary>
+            <div class="details-body">
+              <input class="field-input" type="text" id="customThemeName" placeholder="Название темы">
+              <input class="field-input" type="text" id="customThemeSubtitle" placeholder="Текст над колесом">
+              <div class="upload-row">
+                <div class="upload-zone upload-zone--compact" id="customVisualZone">
+                  <input type="file" id="customVisualInput" accept="image/gif,image/png,image/webp,image/jpeg,video/mp4,video/webm">
+                  <span>+ анимация</span>
+                </div>
+                <div class="upload-zone upload-zone--compact" id="customAudioZone">
+                  <input type="file" id="customAudioInput" accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/webm,.mp3,.wav,.ogg">
+                  <span>+ музыка</span>
+                </div>
+              </div>
+              <div class="custom-files" id="customFilesInfo"></div>
+              <button type="button" class="btn btn-secondary koleso-btn-block" id="saveCustomThemeBtn">Сохранить тему</button>
+              <div class="saved-themes" id="savedThemesList"></div>
+              <textarea class="list-textarea" id="listInput" rows="3" placeholder="Участник или Имя|шанс. Вставь .txt с [GROZNY-KOLESO]"></textarea>
+              <div class="upload-zone upload-zone--compact" id="uploadZone">
+                <input type="file" id="fileInput2" accept=".txt,text/plain">
+                <span>.txt файл</span>
+              </div>
+              <div class="share-row">
+                <button type="button" class="btn btn-secondary" id="exportBtn2">Скачать</button>
+                <button type="button" class="btn btn-secondary" id="importBtn2">Импорт</button>
+              </div>
+            </div>
+          </details>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <audio id="spinAudio" preload="auto"></audio>
+
+  <script>
+    const WHEEL_COLORS = [
+      '#00b6ac','#4a91ae','#63c575','#f85842','#5d60e2','#e58221','#966062','#7daee8',
+      '#6690ad','#2a8bea','#e385cf','#e35182','#36b5e9','#355f56','#375f4e','#519cc0',
+      '#d17175','#b062e7','#abcc9e','#80c18b','#717ff6','#7c9f30','#c3747f','#ea5461',
+      '#b87dc8','#978fbc','#df5f56','#f3bf41','#FFCE24','#EA631D','#E33055','#0085CB',
+      '#275483','#3CB787','#80A649','#E3904C','#C94D51','#5B4749',
+    ];
+
+    const SELECTOR_ANGLE = Math.PI * 1.5;
+    const BORDER_WIDTH = 5;
+    const INNER_BORDER = 2;
+    const MAX_TEXT_LEN = 24;
+    const EXPORT_MARKER = '[GROZNY-KOLESO]';
+    const EXPORT_VERSION = 1;
+    const DB_NAME = 'koleso-db';
+    const DB_STORE = 'themes';
+    const MAX_VISUAL_BYTES = 15 * 1024 * 1024;
+    const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
+
+    const BUILTIN_THEMES = [
+      {
+        id: 'pedro',
+        label: '\u0417\u0432\u0443\u043A 1',
+        subtitle: 'Pedro \u00B7 Pedro \u00B7 Pedro',
+        visual: { type: 'gif', src: '../icons/enotkoleso.gif' },
+        audio: '../music/pedro-pedro-pe.mp3',
+      },
+      {
+        id: 'tikvideo',
+        label: '\u0417\u0432\u0443\u043A 2',
+        subtitle: '\u041A\u0440\u0443\u0442\u0438\u043C \u00B7 \u041A\u0440\u0443\u0442\u0438\u043C \u00B7 \u041A\u0440\u0443\u0442\u0438\u043C',
+        visual: { type: 'video', src: '../icons/TikVideo.App_7650498421920402706.mp4' },
+        audio: '../icons/TikVideo.App_7650498421920402706.mp3',
+      },
+      {
+        id: 'tikvideo2',
+        label: '\u0417\u0432\u0443\u043A 3',
+        subtitle: '\u041A\u0440\u0443\u0442\u0438\u043C \u00B7 \u041A\u0440\u0443\u0442\u0438\u043C \u00B7 \u041A\u0440\u0443\u0442\u0438\u043C',
+        visual: { type: 'video', src: '../icons/TikVideo.App_7614601538601848084.mp4' },
+        audio: '../icons/TikVideo.App_7614601538601848084.mp3',
+      },
+    ];
+
+    const fileInput = document.getElementById('fileInput');
+    const fileInput2 = document.getElementById('fileInput2');
+    const importBtn = document.getElementById('importBtn');
+    const importBtn2 = document.getElementById('importBtn2');
+    const exportBtn = document.getElementById('exportBtn');
+    const exportBtn2 = document.getElementById('exportBtn2');
+    const uploadZone = document.getElementById('uploadZone');
+    const listInput = document.getElementById('listInput');
+    const countEl = document.getElementById('count');
+    const spinBtn = document.getElementById('spinBtn');
+    const spinDuration = document.getElementById('spinDuration');
+    const itemsList = document.getElementById('itemsList');
+    const wheelCanvas = document.getElementById('wheelCanvas');
+    const wheelCore = document.getElementById('wheelCore');
+    const wheelCoreImg = document.getElementById('wheelCoreImg');
+    const wheelCoreVideo = document.getElementById('wheelCoreVideo');
+    const wheelSubtitle = document.getElementById('wheelSubtitle');
+    const emptyState = document.getElementById('emptyState');
+    const resultValue = document.getElementById('resultValue');
+    const wheelBox = document.getElementById('wheelBox');
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const frameStuds = document.getElementById('frameStuds');
+    const spinAudio = document.getElementById('spinAudio');
+    const muteBtn = document.getElementById('muteBtn');
+    const customThemeSelect = document.getElementById('customThemeSelect');
+    const customThemeName = document.getElementById('customThemeName');
+    const customThemeSubtitle = document.getElementById('customThemeSubtitle');
+    const customVisualInput = document.getElementById('customVisualInput');
+    const customAudioInput = document.getElementById('customAudioInput');
+    const customVisualZone = document.getElementById('customVisualZone');
+    const customAudioZone = document.getElementById('customAudioZone');
+    const customFilesInfo = document.getElementById('customFilesInfo');
+    const saveCustomThemeBtn = document.getElementById('saveCustomThemeBtn');
+    const savedThemesList = document.getElementById('savedThemesList');
+    const themeSegmented = document.getElementById('themeSegmented');
+    const modeBtns = document.querySelectorAll('.mode-btn');
+
+    let items = [];
+    let weights = [];
+    let wheelItems = [];
+    let isSpinning = false;
+    let currentRotation = 0;
+    let eliminationMode = false;
+    let highlightedIndex = -1;
+    let animFrame = null;
+    let confettiFrame = null;
+    let confettiPieces = [];
+    let currentThemeId = 'pedro';
+    let soundMuted = false;
+    let customThemes = [];
+    let sessionThemes = [];
+    let pendingCustomVisual = null;
+    let pendingCustomAudio = null;
+    let isImporting = false;
+    const blobUrlCache = { visual: null, audio: null };
+
+    const cacheCanvas = document.createElement('canvas');
+    const cacheCtx = cacheCanvas.getContext('2d');
+    const ctx = wheelCanvas.getContext('2d');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let layout = { targetSize: 480, canvasSize: 624, center: 312, radius: 240, scale: 0.6 };
+
+    function updateLayout() {
+      const boxW = wheelBox.clientWidth || 480;
+      layout.targetSize = boxW;
+      layout.canvasSize = Math.round(boxW * 1.3);
+      layout.center = layout.canvasSize / 2;
+      layout.radius = boxW / 2;
+      layout.scale = boxW / 800;
+      wheelCanvas.width = layout.canvasSize;
+      wheelCanvas.height = layout.canvasSize;
+      wheelCanvas.style.width = layout.canvasSize + 'px';
+      wheelCanvas.style.height = layout.canvasSize + 'px';
+      cacheCanvas.width = layout.canvasSize;
+      cacheCanvas.height = layout.canvasSize;
+      confettiCanvas.width = wheelBox.clientWidth || boxW;
+      confettiCanvas.height = wheelBox.clientHeight || boxW;
+      buildFrameStuds();
+    }
+
+    function buildFrameStuds() {
+      const count = 24;
+      const cx = 260;
+      const cy = 260;
+      const r = 248;
+      frameStuds.innerHTML = Array.from({ length: count }, (_, i) => {
+        const a = (i / count) * Math.PI * 2 - Math.PI / 2;
+        const x = cx + Math.cos(a) * r;
+        const y = cy + Math.sin(a) * r;
+        return `<circle class="frame-stud" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5"/>`;
+      }).join('');
+    }
+
+    function hexToRgb(hex) {
+      let h = hex.replace('#', '');
+      if (h.length === 3) h = h.split('').map(c => c + c).join('');
+      return [
+        parseInt(h.slice(0, 2), 16),
+        parseInt(h.slice(2, 4), 16),
+        parseInt(h.slice(4, 6), 16),
+      ];
+    }
+
+    function adjustColor(hex, amount) {
+      const [r, g, b] = hexToRgb(hex);
+      const clamp = n => Math.max(0, Math.min(255, n + amount));
+      return `rgb(${clamp(r)}, ${clamp(g)}, ${clamp(b)})`;
+    }
+
+    function scale(v) { return layout.scale * v; }
+
+    function parseAmount(raw) {
+      const n = parseFloat(String(raw).trim().replace(',', '.'));
+      return isNaN(n) || n <= 0 ? 1 : n;
+    }
+
+    function parseCaseLine(line) {
+      let raw = line.trim();
+      if (!raw) return null;
+      raw = raw.replace(/^\d+\.\s*/, '');
+      if (raw.includes('|')) {
+        const idx = raw.lastIndexOf('|');
+        const name = raw.slice(0, idx).trim();
+        return name ? { name, weight: parseAmount(raw.slice(idx + 1)) } : null;
+      }
+      const commaIdx = raw.indexOf(',');
+      if (commaIdx >= 0) {
+        const tail = raw.slice(commaIdx + 1).trim();
+        if (/^[\d.,]+$/.test(tail)) {
+          const name = raw.slice(0, commaIdx).trim();
+          return name ? { name, weight: parseAmount(tail) } : null;
+        }
+      }
+      return { name: raw, weight: 1 };
+    }
+
+    function parseCaseLines(text) {
+      return text.split(/\r?\n/).map(parseCaseLine).filter(Boolean);
+    }
+
+    function formatAmount(amount) {
+      return Number(Number(amount).toFixed(2));
+    }
+
+    function formatChance(amount, total) {
+      return total > 0 ? ((amount / total) * 100).toFixed(1) : '0.0';
+    }
+
+    function defineAngles(names, wts) {
+      const amounts = wts.length ? wts : names.map(() => 1);
+      const total = amounts.reduce((a, b) => a + b, 0);
+      let offset = 0;
+      return names.map((name, i) => {
+        const size = amounts[i] / total;
+        const angle = 2 * Math.PI * size;
+        const item = {
+          name,
+          index: i + 1,
+          label: `${i + 1}. ${name}`,
+          color: WHEEL_COLORS[i % WHEEL_COLORS.length],
+          amount: amounts[i],
+          startAngle: offset,
+          endAngle: offset + angle,
+        };
+        offset = item.endAngle;
+        return item;
+      });
+    }
+
+    function fitText(text, max) {
+      return text.length <= max ? text : text.slice(0, max - 1) + '…';
+    }
+
+    function drawSlice(c, item, dimmed) {
+      const { startAngle, endAngle, color } = item;
+      const r = layout.radius - scale(INNER_BORDER);
+      const midAngle = (startAngle + endAngle) / 2;
+      const gx = layout.center + Math.cos(midAngle) * r * 0.45;
+      const gy = layout.center + Math.sin(midAngle) * r * 0.45;
+      const grad = c.createRadialGradient(layout.center, layout.center, 0, gx, gy, r);
+      if (dimmed) {
+        grad.addColorStop(0, '#777');
+        grad.addColorStop(0.55, '#555');
+        grad.addColorStop(1, '#3a3a3a');
+      } else {
+        grad.addColorStop(0, adjustColor(color, 55));
+        grad.addColorStop(0.45, color);
+        grad.addColorStop(1, adjustColor(color, -45));
+      }
+      c.fillStyle = grad;
+      c.strokeStyle = 'rgba(255,255,255,0.92)';
+      c.lineWidth = scale(INNER_BORDER);
+      c.beginPath();
+      c.moveTo(layout.center, layout.center);
+      c.arc(layout.center, layout.center, r, startAngle, endAngle);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+
+    function drawText(c, item) {
+      const { startAngle, endAngle, label } = item;
+      if ((endAngle - startAngle) / Math.PI / 2 < 0.012) return;
+      const radius = layout.radius - scale(3);
+      const text = fitText(label, MAX_TEXT_LEN);
+      c.save();
+      c.fillStyle = '#fff';
+      c.font = `bold ${scale(20)}px Arial, sans-serif`;
+      c.textBaseline = 'middle';
+      c.shadowColor = 'rgba(0,0,0,0.55)';
+      c.shadowBlur = scale(4);
+      c.shadowOffsetY = scale(1);
+      const offsetMod = -text.length * 0.007 + 1.3;
+      const textRadius = (radius - c.measureText(text).width) / offsetMod;
+      const centerAngle = endAngle - (endAngle - startAngle) / 2;
+      c.translate(
+        textRadius * Math.cos(centerAngle) + layout.center,
+        textRadius * Math.sin(centerAngle) + layout.center
+      );
+      c.rotate(centerAngle);
+      c.fillText(text, 0, 0);
+      c.shadowColor = 'transparent';
+      c.restore();
+    }
+
+    function drawOuterBorder(c) {
+      const bw = scale(BORDER_WIDTH);
+      const outerR = layout.radius - bw / 2;
+      c.strokeStyle = 'rgba(255,255,255,0.95)';
+      c.lineWidth = bw;
+      c.beginPath();
+      c.arc(layout.center, layout.center, outerR, 0, 2 * Math.PI);
+      c.stroke();
+      c.strokeStyle = 'rgba(243,191,65,0.35)';
+      c.lineWidth = scale(2);
+      c.beginPath();
+      c.arc(layout.center, layout.center, outerR - scale(3), 0, 2 * Math.PI);
+      c.stroke();
+      const sw = scale(15);
+      const innerR = layout.radius - bw;
+      const g = c.createRadialGradient(layout.center, layout.center, innerR - sw, layout.center, layout.center, innerR);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(0.6, 'rgba(0,0,0,0.12)');
+      g.addColorStop(1, 'rgba(0,0,0,0.35)');
+      c.save();
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(layout.center, layout.center, innerR, 0, 2 * Math.PI);
+      c.arc(layout.center, layout.center, innerR - sw, 0, 2 * Math.PI, true);
+      c.fill();
+      c.restore();
+    }
+
+    function burstConfetti() {
+      const w = confettiCanvas.width;
+      const h = confettiCanvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const colors = ['#f3bf41', '#9146ff', '#e35182', '#63c575', '#ffd86b', '#fff'];
+      confettiPieces = Array.from({ length: 90 }, () => ({
+        x: cx,
+        y: cy,
+        vx: (Math.random() - 0.5) * 9,
+        vy: (Math.random() - 0.9) * 9,
+        rot: Math.random() * 360,
+        spin: (Math.random() - 0.5) * 14,
+        size: 4 + Math.random() * 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: 1,
+      }));
+      if (confettiFrame) cancelAnimationFrame(confettiFrame);
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      const w = confettiCanvas.width;
+      const h = confettiCanvas.height;
+      confettiCtx.clearRect(0, 0, w, h);
+      confettiPieces = confettiPieces.filter(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.18;
+        p.rot += p.spin;
+        p.life -= 0.014;
+        if (p.life <= 0) return false;
+        confettiCtx.save();
+        confettiCtx.globalAlpha = Math.max(0, p.life);
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate((p.rot * Math.PI) / 180);
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * 0.55);
+        confettiCtx.restore();
+        return true;
+      });
+      if (confettiPieces.length) {
+        confettiFrame = requestAnimationFrame(animateConfetti);
+      } else {
+        confettiCtx.clearRect(0, 0, w, h);
+        confettiFrame = null;
+      }
+    }
+
+    function rebuildCache() {
+      cacheCtx.clearRect(0, 0, layout.canvasSize, layout.canvasSize);
+      wheelItems.forEach((item, i) => drawSlice(cacheCtx, item, highlightedIndex >= 0 && highlightedIndex !== i));
+      wheelItems.forEach(item => drawText(cacheCtx, item));
+      drawOuterBorder(cacheCtx);
+    }
+
+    function renderWheel(rotation) {
+      ctx.clearRect(0, 0, layout.canvasSize, layout.canvasSize);
+      ctx.save();
+      ctx.translate(layout.center, layout.center);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.drawImage(cacheCanvas, -layout.center, -layout.center);
+      ctx.restore();
+    }
+
+    function getWheelAngle(rotate) {
+      const degree = 360 - (rotate % 360);
+      let angle = (degree * Math.PI) / 180 + SELECTOR_ANGLE;
+      if (angle >= Math.PI * 2) angle -= Math.PI * 2;
+      return angle;
+    }
+
+    function getItemAtPointer(rotation) {
+      const angle = getWheelAngle(rotation);
+      return wheelItems.find(({ startAngle, endAngle }) => angle >= startAngle && angle <= endAngle);
+    }
+
+    function updateCoreColor(rotation) {
+      const item = getItemAtPointer(rotation);
+      wheelCore.style.setProperty('--core-color', item ? item.color : '#eee');
+    }
+
+    function updateCoreSpin(rotation) {
+      wheelCore.style.setProperty('--core-spin', `${rotation * 3}deg`);
+    }
+
+    function getTheme(id) {
+      return BUILTIN_THEMES.find(theme => theme.id === id)
+        || customThemes.find(theme => theme.id === id)
+        || sessionThemes.find(theme => theme.id === id)
+        || BUILTIN_THEMES[0];
+    }
+
+    function getSelectableThemes() {
+      return [...customThemes, ...sessionThemes];
+    }
+
+    function isCustomThemeId(id) {
+      return id.startsWith('custom_') || id.startsWith('session_');
+    }
+
+    function revokeThemeUrls() {
+      if (blobUrlCache.visual) {
+        URL.revokeObjectURL(blobUrlCache.visual);
+        blobUrlCache.visual = null;
+      }
+      if (blobUrlCache.audio) {
+        URL.revokeObjectURL(blobUrlCache.audio);
+        blobUrlCache.audio = null;
+      }
+    }
+
+    function base64ToBlob(base64, mime) {
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return new Blob([bytes], { type: mime });
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1]);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function fileToMediaAsset(file, maxBytes) {
+      if (!file) return Promise.resolve(null);
+      if (file.size > maxBytes) {
+        return Promise.reject(new Error(`Файл «${file.name}» слишком большой (макс. ${Math.round(maxBytes / 1024 / 1024)} МБ)`));
+      }
+      return blobToBase64(file).then(base64 => ({
+        filename: file.name,
+        mime: file.type || guessMime(file.name),
+        base64,
+      }));
+    }
+
+    function guessMime(filename) {
+      const ext = filename.split('.').pop().toLowerCase();
+      const map = {
+        gif: 'image/gif', png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+        mp4: 'video/mp4', webm: 'video/webm', mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg',
+      };
+      return map[ext] || 'application/octet-stream';
+    }
+
+    function visualTypeFromMime(mime) {
+      return mime.startsWith('video/') ? 'video' : 'gif';
+    }
+
+    function openDb() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = () => req.result.createObjectStore(DB_STORE, { keyPath: 'id' });
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function loadCustomThemes() {
+      try {
+        const db = await openDb();
+        customThemes = await new Promise((resolve, reject) => {
+          const tx = db.transaction(DB_STORE, 'readonly');
+          const req = tx.objectStore(DB_STORE).getAll();
+          req.onsuccess = () => resolve((req.result || []).map(theme => ({ ...theme, custom: true })));
+          req.onerror = () => reject(req.error);
+        });
+        db.close();
+      } catch {
+        customThemes = [];
+      }
+      renderCustomThemeSelect();
+      renderSavedThemesList();
+    }
+
+    async function persistCustomTheme(theme) {
+      const db = await openDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, 'readwrite');
+        const req = tx.objectStore(DB_STORE).put(theme);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+      db.close();
+    }
+
+    async function removeCustomTheme(id) {
+      if (sessionThemes.some(theme => theme.id === id)) {
+        sessionThemes = sessionThemes.filter(theme => theme.id !== id);
+        if (currentThemeId === id) applyTheme(BUILTIN_THEMES[0].id);
+        renderCustomThemeSelect();
+        return;
+      }
+
+      const db = await openDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, 'readwrite');
+        const req = tx.objectStore(DB_STORE).delete(id);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+      db.close();
+      customThemes = customThemes.filter(theme => theme.id !== id);
+      if (currentThemeId === id) applyTheme(BUILTIN_THEMES[0].id);
+      renderCustomThemeSelect();
+      renderSavedThemesList();
+    }
+
+    function renderCustomThemeSelect() {
+      const all = getSelectableThemes();
+      customThemeSelect.innerHTML = '<option value="">— Свои темы —</option>'
+        + all.map(theme => {
+          const suffix = theme.ephemeral ? ' (РёР· txt)' : '';
+          return `<option value="${escapeHtml(theme.id)}">${escapeHtml(theme.label)}${suffix}</option>`;
+        }).join('');
+      customThemeSelect.disabled = all.length === 0;
+      customThemeSelect.value = isCustomThemeId(currentThemeId) ? currentThemeId : '';
+    }
+
+    function renderSavedThemesList() {
+      if (!customThemes.length) {
+        savedThemesList.innerHTML = '<p class="field-hint">Пока нет сохранённых тем</p>';
+        return;
+      }
+      savedThemesList.innerHTML = customThemes.map(theme => `
+        <div class="saved-theme-item">
+          <span>${escapeHtml(theme.label)}</span>
+          <button type="button" class="btn btn-secondary" data-use-theme="${escapeHtml(theme.id)}" style="width:auto;padding:6px 10px;font-size:0.8rem">Выбрать</button>
+          <button type="button" class="btn-danger" data-delete-theme="${escapeHtml(theme.id)}">Удалить</button>
+        </div>
+      `).join('');
+      savedThemesList.querySelectorAll('[data-use-theme]').forEach(btn => {
+        btn.addEventListener('click', () => applyTheme(btn.dataset.useTheme));
+      });
+      savedThemesList.querySelectorAll('[data-delete-theme]').forEach(btn => {
+        btn.addEventListener('click', () => removeCustomTheme(btn.dataset.deleteTheme));
+      });
+    }
+
+    function updateCustomFilesInfo() {
+      const parts = [];
+      if (pendingCustomVisual) parts.push(`<span class="ok">✓ Анимация: ${escapeHtml(pendingCustomVisual.filename)}</span>`);
+      if (pendingCustomAudio) parts.push(`<span class="ok">✓ Музыка: ${escapeHtml(pendingCustomAudio.filename)}</span>`);
+      customFilesInfo.innerHTML = parts.join('') || '<span>Файлы не выбраны</span>';
+    }
+
+    function setBuiltinThemeActive(themeId) {
+      themeSegmented.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === themeId);
+      });
+      if (!isCustomThemeId(themeId)) customThemeSelect.value = '';
+    }
+
+    function renderBuiltinThemeButtons() {
+      themeSegmented.innerHTML = BUILTIN_THEMES.map(theme => (
+        `<button type="button" class="theme-btn${theme.id === currentThemeId ? ' active' : ''}" data-theme="${theme.id}">${escapeHtml(theme.label)}</button>`
+      )).join('');
+    }
+
+    function applyTheme(themeId) {
+      const theme = getTheme(themeId);
+      currentThemeId = theme.id;
+      wheelSubtitle.textContent = theme.subtitle || theme.label;
+      setBuiltinThemeActive(theme.id);
+      if (isCustomThemeId(theme.id)) customThemeSelect.value = theme.id;
+      revokeThemeUrls();
+
+      if (theme.custom) {
+        const visualUrl = URL.createObjectURL(base64ToBlob(theme.visual.base64, theme.visual.mime));
+        const audioUrl = URL.createObjectURL(base64ToBlob(theme.audio.base64, theme.audio.mime));
+        blobUrlCache.visual = visualUrl;
+        blobUrlCache.audio = audioUrl;
+
+        if (theme.visual.type === 'video') {
+          wheelCoreImg.hidden = true;
+          wheelCoreVideo.hidden = false;
+          wheelCoreVideo.src = visualUrl;
+          wheelCoreVideo.play().catch(() => {});
+        } else {
+          wheelCoreVideo.hidden = true;
+          wheelCoreVideo.pause();
+          wheelCoreVideo.removeAttribute('src');
+          wheelCoreVideo.load();
+          wheelCoreImg.hidden = false;
+          wheelCoreImg.src = visualUrl;
+        }
+        spinAudio.src = audioUrl;
+      } else {
+        if (theme.visual.type === 'video') {
+          wheelCoreImg.hidden = true;
+          wheelCoreVideo.hidden = false;
+          const videoFile = theme.visual.src.split('/').pop();
+          if (!wheelCoreVideo.src || !wheelCoreVideo.src.includes(videoFile)) {
+            wheelCoreVideo.src = theme.visual.src;
+          }
+          wheelCoreVideo.play().catch(() => {});
+        } else {
+          wheelCoreVideo.hidden = true;
+          wheelCoreVideo.pause();
+          wheelCoreVideo.removeAttribute('src');
+          wheelCoreVideo.load();
+          wheelCoreImg.hidden = false;
+          wheelCoreImg.src = theme.visual.src;
+        }
+        spinAudio.src = theme.audio;
+      }
+
+      spinAudio.load();
+      if (!theme.ephemeral) {
+        localStorage.setItem('koleso-theme', theme.id);
+      }
+    }
+
+    function updateMuteButton() {
+      muteBtn.textContent = soundMuted ? 'Включить звук' : 'Отключить звук';
+      muteBtn.classList.toggle('muted', soundMuted);
+      muteBtn.setAttribute('aria-pressed', soundMuted ? 'true' : 'false');
+    }
+
+    function playSpinAudio() {
+      if (soundMuted) return;
+      spinAudio.loop = true;
+      spinAudio.currentTime = 0;
+      spinAudio.play().catch(() => {});
+    }
+
+    function stopSpinAudio() {
+      spinAudio.loop = false;
+      spinAudio.pause();
+      spinAudio.currentTime = 0;
+    }
+
+    function updateFromText() {
+      const parsed = parseCaseLines(listInput.value);
+      items = parsed.map(x => x.name);
+      weights = parsed.map(x => x.weight);
+      wheelItems = defineAngles(items, weights);
+      updateUI();
+    }
+
+    function updateUI() {
+      const n = items.length;
+      countEl.textContent = n;
+      spinBtn.disabled = n < 2 || isSpinning;
+      if (!isSpinning) spinBtn.textContent = 'Крутить';
+
+      const total = weights.reduce((a, b) => a + b, 0);
+
+      itemsList.innerHTML = items.map((item, i) => {
+        const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
+        const label = `${i + 1}. ${item}`;
+        const amt = formatAmount(weights[i]);
+        const pct = formatChance(weights[i], total);
+        return `<li class="item-row" data-idx="${i}">
+          <span class="item-name">${escapeHtml(label)}</span>
+          <span class="item-amount">${amt}</span>
+          <span class="item-sep">|</span>
+          <span class="item-pct">${pct} %</span>
+          <span class="item-color" style="--c:${color}"></span>
+        </li>`;
+      }).join('');
+
+      itemsList.querySelectorAll('li').forEach(li => {
+        li.addEventListener('mouseenter', () => {
+          highlightedIndex = Number(li.dataset.idx);
+          rebuildCache();
+          renderWheel(currentRotation);
+        });
+        li.addEventListener('mouseleave', () => {
+          highlightedIndex = -1;
+          rebuildCache();
+          renderWheel(currentRotation);
+        });
+      });
+
+      updateLayout();
+
+      if (n === 0) {
+        emptyState.style.display = 'flex';
+        wheelCanvas.style.opacity = '0';
+        resultValue.textContent = 'Победитель';
+        resultValue.classList.add('empty');
+        wheelCore.style.setProperty('--core-color', '#eee');
+        wheelCore.style.setProperty('--core-spin', '0deg');
+        ctx.clearRect(0, 0, layout.canvasSize, layout.canvasSize);
+      } else {
+        emptyState.style.display = 'none';
+        wheelCanvas.style.opacity = '1';
+        rebuildCache();
+        renderWheel(currentRotation);
+        updateCoreColor(currentRotation);
+        updateCoreSpin(currentRotation);
+        if (!isSpinning && resultValue.classList.contains('empty')) {
+          resultValue.textContent = 'Победитель';
+        }
+      }
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function pickWinnerIndex() {
+      const n = items.length;
+      const total = weights.reduce((a, b) => a + b, 0);
+      const r = Math.random() * total;
+      let sum = 0;
+      for (let i = 0; i < n; i++) {
+        sum += weights[i];
+        if (r < sum) return i;
+      }
+      return n - 1;
+    }
+
+    function distanceToItem(index) {
+      const item = wheelItems[index];
+      const full = Math.PI * 2;
+      const t = item.startAngle / full + Math.random() * (item.endAngle - item.startAngle) / full;
+      return (1 - t) * 360 + 270;
+    }
+
+    function calcSpinDistance(winnerIndex, durationSec) {
+      const fixed = durationSec * 270;
+      const local = distanceToItem(winnerIndex);
+      return Math.round(fixed / 360) * 360 + local;
+    }
+
+    function easeSpin(t) {
+      return 1 - Math.pow(1 - t, 3.2);
+    }
+
+    function spin() {
+      if (items.length < 2 || isSpinning) return;
+      isSpinning = true;
+      spinBtn.disabled = true;
+      spinBtn.textContent = 'Крутимся…';
+      wheelCore.classList.add('spinning');
+      wheelBox.classList.add('spinning');
+      resultValue.classList.remove('win');
+      playSpinAudio();
+
+      const winnerIndex = pickWinnerIndex();
+      const winner = wheelItems[winnerIndex].label;
+      const durationSec = Math.max(3, Math.min(60, Number(spinDuration.value) || 20));
+      const spinDistance = calcSpinDistance(winnerIndex, durationSec);
+      const startRot = currentRotation;
+      const offset = ((startRot % 360) + 360) % 360;
+      const delta = spinDistance - offset;
+      const endRot = startRot + delta;
+      const startTime = performance.now();
+      const durationMs = durationSec * 1000;
+
+      if (animFrame) cancelAnimationFrame(animFrame);
+
+      function frame(now) {
+        const t = Math.min(1, (now - startTime) / durationMs);
+        currentRotation = startRot + delta * easeSpin(t);
+        renderWheel(currentRotation);
+        updateCoreColor(currentRotation);
+        updateCoreSpin(currentRotation);
+        const under = getItemAtPointer(currentRotation);
+        if (under) {
+          resultValue.textContent = under.label;
+          resultValue.classList.remove('empty');
+        }
+        if (t < 1) {
+          animFrame = requestAnimationFrame(frame);
+        } else {
+          currentRotation = endRot;
+          renderWheel(currentRotation);
+          updateCoreColor(currentRotation);
+          updateCoreSpin(currentRotation);
+          resultValue.textContent = winner;
+          resultValue.classList.remove('empty');
+          resultValue.classList.add('win');
+          isSpinning = false;
+          wheelCore.classList.remove('spinning');
+          wheelBox.classList.remove('spinning');
+          stopSpinAudio();
+          burstConfetti();
+          animFrame = null;
+
+          if (eliminationMode && items.length > 1) {
+            items = items.filter((_, i) => i !== winnerIndex);
+            weights = weights.filter((_, i) => i !== winnerIndex);
+            listInput.value = items.map((name, i) => `${name}|${weights[i]}`).join('\n');
+            currentRotation = 0;
+            updateFromText();
+          }
+          spinBtn.disabled = items.length < 2;
+          spinBtn.textContent = 'Крутить';
+        }
+      }
+      animFrame = requestAnimationFrame(frame);
+    }
+
+    function formatParticipantsForExport() {
+      return items.map((name, i) => {
+        const weight = formatAmount(weights[i]);
+        return weight === 1 ? name : `${name}|${weight}`;
+      }).join('\n');
+    }
+
+    async function getThemeMediaForExport(theme) {
+      if (theme.custom) {
+        return {
+          label: theme.label,
+          subtitle: theme.subtitle || theme.label,
+          visual: theme.visual,
+          audio: theme.audio,
+        };
+      }
+
+      const visualFilename = theme.visual.src.split('/').pop();
+      const audioFilename = theme.audio.split('/').pop();
+      const [visualRes, audioRes] = await Promise.all([
+        fetch(theme.visual.src),
+        fetch(theme.audio),
+      ]);
+      if (!visualRes.ok || !audioRes.ok) {
+        throw new Error('Не удалось загрузить анимацию или музыку текущей темы');
+      }
+
+      const [visualBlob, audioBlob] = await Promise.all([visualRes.blob(), audioRes.blob()]);
+      const [visualBase64, audioBase64] = await Promise.all([
+        blobToBase64(visualBlob),
+        blobToBase64(audioBlob),
+      ]);
+
+      return {
+        label: theme.label,
+        subtitle: theme.subtitle || theme.label,
+        visual: {
+          type: theme.visual.type,
+          filename: visualFilename,
+          mime: visualBlob.type || guessMime(visualFilename),
+          base64: visualBase64,
+        },
+        audio: {
+          filename: audioFilename,
+          mime: audioBlob.type || guessMime(audioFilename),
+          base64: audioBase64,
+        },
+      };
+    }
+
+    function appendThemeMediaLines(lines, media) {
+      lines.push(
+        '',
+        '[custom-theme]',
+        `label=${media.label}`,
+        `subtitle=${media.subtitle}`,
+        `visual-type=${media.visual.type}`,
+        `visual-filename=${media.visual.filename}`,
+        `visual-mime=${media.visual.mime}`,
+        `visual-base64=${media.visual.base64}`,
+        '',
+        '[custom-audio]',
+        `audio-filename=${media.audio.filename}`,
+        `audio-mime=${media.audio.mime}`,
+        `audio-base64=${media.audio.base64}`,
+      );
+    }
+
+    async function buildExportText() {
+      const theme = getTheme(currentThemeId);
+      const media = await getThemeMediaForExport(theme);
+      const lines = [
+        EXPORT_MARKER,
+        `version=${EXPORT_VERSION}`,
+        `theme=${currentThemeId}`,
+        `duration=${Math.max(3, Math.min(60, Number(spinDuration.value) || 20))}`,
+        `mode=${eliminationMode ? 'dropout' : 'normal'}`,
+        `muted=${soundMuted ? 1 : 0}`,
+        '',
+        '[participants]',
+        formatParticipantsForExport() || '',
+      ];
+      appendThemeMediaLines(lines, media);
+      return lines.join('\n');
+    }
+
+    async function downloadExport() {
+      const buttons = [exportBtn, exportBtn2];
+      const labels = buttons.map(btn => btn.textContent);
+      buttons.forEach(btn => { btn.disabled = true; });
+      exportBtn.textContent = 'Готовим…';
+      try {
+        const text = await buildExportText();
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const date = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `koleso-${date}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert(err.message || 'Не удалось сформировать файл');
+      } finally {
+        buttons.forEach((btn, i) => {
+          btn.disabled = false;
+          btn.textContent = labels[i];
+        });
+      }
+    }
+
+    function parseExportSection(lines, sectionName) {
+      const start = lines.findIndex(line => line.trim().toLowerCase() === `[${sectionName}]`);
+      if (start < 0) return [];
+      const out = [];
+      for (let i = start + 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^\[[^\]]+\]$/.test(line.trim())) break;
+        out.push(line);
+      }
+      return out;
+    }
+
+    function parseExportSettings(lines) {
+      const settings = {};
+      for (const line of lines) {
+        if (line.startsWith('[')) break;
+        const idx = line.indexOf('=');
+        if (idx > 0) settings[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+      }
+      return settings;
+    }
+
+    function parseKeyValueLines(lines) {
+      const data = {};
+      let currentKey = null;
+      for (const line of lines) {
+        const idx = line.indexOf('=');
+        if (idx > 0) {
+          currentKey = line.slice(0, idx).trim();
+          data[currentKey] = line.slice(idx + 1);
+        } else if (currentKey) {
+          data[currentKey] += line;
+        }
+      }
+      return data;
+    }
+
+    async function importPackage(text) {
+      const lines = text.replace(/\r\n/g, '\n').split('\n');
+      const isFullPackage = lines.some(line => line.trim() === EXPORT_MARKER);
+
+      if (!isFullPackage) {
+        listInput.value = text.trim();
+        updateFromText();
+        showImportStatus('\u0418\u043C\u043F\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u0430\u043D \u0441\u043F\u0438\u0441\u043E\u043A');
+        return;
+      }
+
+      const settings = parseExportSettings(lines.slice(1));
+      const participantLines = parseExportSection(lines, 'participants').join('\n').trim();
+      isImporting = true;
+      listInput.value = participantLines;
+      isImporting = false;
+      updateFromText();
+
+      if (settings.duration) spinDuration.value = settings.duration;
+      if (settings.mode) {
+        eliminationMode = settings.mode === 'dropout';
+        modeBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === settings.mode));
+      }
+      if (settings.muted !== undefined) {
+        soundMuted = settings.muted === '1';
+        localStorage.setItem('koleso-muted', soundMuted ? '1' : '0');
+        updateMuteButton();
+      }
+
+      const themeSection = parseKeyValueLines(parseExportSection(lines, 'custom-theme'));
+      const audioSection = parseKeyValueLines(parseExportSection(lines, 'custom-audio'));
+
+      if (themeSection['visual-base64'] && audioSection['audio-base64']) {
+        const importedTheme = {
+          id: `session_${Date.now()}`,
+          custom: true,
+          ephemeral: true,
+          label: themeSection.label || settings.theme || 'Из txt',
+          subtitle: themeSection.subtitle || themeSection.label || 'Колесо',
+          visual: {
+            type: themeSection['visual-type'] || visualTypeFromMime(themeSection['visual-mime'] || ''),
+            filename: themeSection['visual-filename'] || 'visual',
+            mime: themeSection['visual-mime'] || guessMime(themeSection['visual-filename'] || ''),
+            base64: themeSection['visual-base64'],
+          },
+          audio: {
+            filename: audioSection['audio-filename'] || 'audio.mp3',
+            mime: audioSection['audio-mime'] || guessMime(audioSection['audio-filename'] || ''),
+            base64: audioSection['audio-base64'],
+          },
+        };
+        sessionThemes = [importedTheme];
+        renderCustomThemeSelect();
+        applyTheme(importedTheme.id);
+      } else if (settings.theme) {
+        applyTheme(settings.theme);
+      }
+
+      document.getElementById('editPanel').open = false;
+      showImportStatus('\u0418\u043C\u043F\u043E\u0440\u0442 \u0433\u043E\u0442\u043E\u0432');
+    }
+
+    let importStatusTimer = null;
+    function showImportStatus(message) {
+      let el = document.getElementById('importStatus');
+      if (!el) {
+        el = document.createElement('p');
+        el.id = 'importStatus';
+        el.className = 'import-status';
+        document.querySelector('.wheel-toolbar-actions').appendChild(el);
+      }
+      el.textContent = message;
+      el.hidden = false;
+      clearTimeout(importStatusTimer);
+      importStatusTimer = setTimeout(() => { el.hidden = true; }, 2600);
+    }
+
+    function handleListInput() {
+      if (isImporting) return;
+      if (listInput.value.includes(EXPORT_MARKER)) {
+        const text = listInput.value;
+        listInput.value = '';
+        importPackage(text).catch(err => {
+          alert(err.message || '\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0438\u043C\u043F\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0432\u0441\u0442\u0430\u0432\u043B\u0435\u043D\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442');
+        });
+        return;
+      }
+      updateFromText();
+    }
+
+    async function saveCustomTheme() {
+      const label = customThemeName.value.trim();
+      if (!label) {
+        alert('Введите название темы');
+        return;
+      }
+      if (!pendingCustomVisual || !pendingCustomAudio) {
+        alert('Загрузите анимацию и музыку');
+        return;
+      }
+
+      try {
+        const theme = {
+          id: `custom_${Date.now()}`,
+          custom: true,
+          ephemeral: false,
+          label,
+          subtitle: customThemeSubtitle.value.trim() || label,
+          visual: {
+            type: visualTypeFromMime(pendingCustomVisual.mime),
+            filename: pendingCustomVisual.filename,
+            mime: pendingCustomVisual.mime,
+            base64: pendingCustomVisual.base64,
+          },
+          audio: {
+            filename: pendingCustomAudio.filename,
+            mime: pendingCustomAudio.mime,
+            base64: pendingCustomAudio.base64,
+          },
+        };
+        customThemes.push(theme);
+        await persistCustomTheme(theme);
+        renderCustomThemeSelect();
+        renderSavedThemesList();
+        applyTheme(theme.id);
+        customThemeName.value = '';
+        customThemeSubtitle.value = '';
+        pendingCustomVisual = null;
+        pendingCustomAudio = null;
+        customVisualInput.value = '';
+        customAudioInput.value = '';
+        updateCustomFilesInfo();
+      } catch (err) {
+        alert(err.message || 'Не удалось сохранить тему');
+      }
+    }
+
+    function readFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          await importPackage(String(reader.result || ''));
+        } catch (err) {
+          alert(err.message || 'Не удалось импортировать файл');
+        }
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    importBtn.addEventListener('click', () => fileInput.click());
+    importBtn2.addEventListener('click', () => fileInput.click());
+    exportBtn.addEventListener('click', downloadExport);
+    exportBtn2.addEventListener('click', downloadExport);
+    fileInput.addEventListener('change', () => { readFile(fileInput.files[0]); fileInput.value = ''; });
+    fileInput2.addEventListener('change', () => { readFile(fileInput2.files[0]); fileInput2.value = ''; });
+    uploadZone.addEventListener('click', () => fileInput2.click());
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); });
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file) readFile(file);
+    });
+    customVisualZone.addEventListener('click', () => customVisualInput.click());
+    customAudioZone.addEventListener('click', () => customAudioInput.click());
+    customVisualInput.addEventListener('change', async () => {
+      const file = customVisualInput.files[0];
+      if (!file) return;
+      try {
+        pendingCustomVisual = await fileToMediaAsset(file, MAX_VISUAL_BYTES);
+        updateCustomFilesInfo();
+      } catch (err) {
+        alert(err.message);
+        customVisualInput.value = '';
+      }
+    });
+    customAudioInput.addEventListener('change', async () => {
+      const file = customAudioInput.files[0];
+      if (!file) return;
+      try {
+        pendingCustomAudio = await fileToMediaAsset(file, MAX_AUDIO_BYTES);
+        updateCustomFilesInfo();
+      } catch (err) {
+        alert(err.message);
+        customAudioInput.value = '';
+      }
+    });
+    saveCustomThemeBtn.addEventListener('click', () => saveCustomTheme());
+    customThemeSelect.addEventListener('change', () => {
+      if (isSpinning || !customThemeSelect.value) return;
+      applyTheme(customThemeSelect.value);
+    });
+    listInput.addEventListener('input', handleListInput);
+    listInput.addEventListener('paste', e => {
+      const text = e.clipboardData && e.clipboardData.getData('text');
+      if (text && text.includes(EXPORT_MARKER)) {
+        e.preventDefault();
+        listInput.value = '';
+        importPackage(text).catch(err => {
+          alert(err.message || '\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0438\u043C\u043F\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C');
+        });
+        return;
+      }
+      setTimeout(handleListInput, 0);
+    });
+    themeSegmented.addEventListener('click', e => {
+      const btn = e.target.closest('.theme-btn');
+      if (!btn || isSpinning) return;
+      applyTheme(btn.dataset.theme);
+    });
+    modeBtns.forEach(btn => btn.addEventListener('click', () => {
+      eliminationMode = btn.dataset.mode === 'dropout';
+      modeBtns.forEach(b => b.classList.toggle('active', b === btn));
+    }));
+    muteBtn.addEventListener('click', () => {
+      soundMuted = !soundMuted;
+      localStorage.setItem('koleso-muted', soundMuted ? '1' : '0');
+      updateMuteButton();
+      if (soundMuted) stopSpinAudio();
+    });
+    spinBtn.addEventListener('click', spin);
+
+    window.addEventListener('resize', () => {
+      if (items.length) {
+        updateLayout();
+        rebuildCache();
+        renderWheel(currentRotation);
+      } else {
+        updateLayout();
+      }
+    });
+
+    renderBuiltinThemeButtons();
+    soundMuted = localStorage.getItem('koleso-muted') === '1';
+    updateMuteButton();
+    updateCustomFilesInfo();
+    loadCustomThemes().then(() => {
+      const savedId = localStorage.getItem('koleso-theme') || 'pedro';
+      const themeExists = BUILTIN_THEMES.some(t => t.id === savedId)
+        || customThemes.some(t => t.id === savedId);
+      applyTheme(themeExists ? savedId : 'pedro');
+      renderBuiltinThemeButtons();
+      updateLayout();
+      updateFromText();
+    });
+  </script>
+</body>
+</html>

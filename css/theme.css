@@ -1,0 +1,164 @@
+/**
+ * GroznyHub Design System
+ * Twitch × Kick × RADMIR — единая тема для сайта и OBS-виджетов
+ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+    /* —— База (Twitch dark) —— */
+    --bg-primary: #050507;
+    --bg-secondary: #0e0e10;
+    --bg-elevated: #18181b;
+    --bg-panel: #1f1f23;
+    --bg-panel-hover: #26262c;
+    --glass-bg: rgba(14, 14, 16, 0.92);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-highlight: #3f3f46;
+
+    /* —— Twitch —— */
+    --twitch-purple: #9146ff;
+    --twitch-purple-hover: #772ce8;
+    --twitch-purple-soft: rgba(145, 70, 255, 0.18);
+    --twitch-purple-glow: rgba(145, 70, 255, 0.45);
+    --twitch-text: #bf94ff;
+
+    /* —— Kick —— */
+    --kick-green: #53fc18;
+    --kick-green-hover: #43d012;
+    --kick-green-soft: rgba(83, 252, 24, 0.14);
+    --kick-green-glow: rgba(83, 252, 24, 0.4);
+    --kick-text: #b8ff9a;
+    --kick-dark: #0a1408;
+
+    /* —— RADMIR —— */
+    --radmir-gold: #ffc933;
+    --radmir-orange: #ff6b1a;
+    --radmir-red: #ff3d00;
+    --radmir-orange-soft: rgba(255, 107, 26, 0.16);
+    --radmir-gold-glow: rgba(255, 201, 51, 0.35);
+
+    /* —— Текст и UI —— */
+    --text-primary: #efeff1;
+    --text-secondary: #adadb8;
+    --text-muted: #6b6b76;
+    --border: rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --success: #00f593;
+    --live: #eb0400;
+    --danger: #f87171;
+
+    /* —— Акценты по умолчанию —— */
+    --accent: var(--twitch-purple);
+    --accent-hover: var(--twitch-purple-hover);
+    --accent-warm: var(--radmir-orange);
+    --accent-warm-hover: #ff8533;
+
+    /* —— Градиенты —— */
+    --gradient-triple: linear-gradient(
+        90deg,
+        var(--twitch-purple) 0%,
+        var(--twitch-purple) 33.33%,
+        var(--kick-green) 33.33%,
+        var(--kick-green) 66.66%,
+        var(--radmir-orange) 66.66%,
+        var(--radmir-orange) 100%
+    );
+    --gradient-brand: linear-gradient(
+        135deg,
+        var(--twitch-purple) 0%,
+        #a855f7 38%,
+        var(--kick-green) 62%,
+        var(--radmir-orange) 100%
+    );
+    --gradient-warm: linear-gradient(
+        135deg,
+        var(--radmir-gold) 0%,
+        var(--radmir-orange) 55%,
+        var(--radmir-red) 100%
+    );
+    --gradient-twitch: linear-gradient(180deg, #9146ff 0%, #772ce8 100%);
+    --gradient-kick: linear-gradient(180deg, #53fc18 0%, #2eb80e 100%);
+    --gradient-radmir: linear-gradient(180deg, #ffc933 0%, #ff6b1a 100%);
+
+    --bg-ambient-1: rgba(145, 70, 255, 0.22);
+    --bg-ambient-2: rgba(83, 252, 24, 0.08);
+    --bg-ambient-3: rgba(255, 107, 26, 0.12);
+
+    /* —— Радиусы и тени —— */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+    --shadow-panel: 0 12px 40px rgba(0, 0, 0, 0.45);
+    --shadow-soft: 0 2px 16px rgba(0, 0, 0, 0.28);
+    --shadow-glow-twitch: 0 8px 32px var(--twitch-purple-glow);
+    --shadow-glow-kick: 0 8px 32px var(--kick-green-glow);
+    --shadow-glow-gold: 0 8px 32px var(--radmir-gold-glow);
+
+    /* —— Виджеты OBS —— */
+    --widget-font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --widget-panel-bg-twitch: linear-gradient(145deg, rgba(28, 14, 52, 0.97), rgba(8, 8, 14, 0.95));
+    --widget-panel-bg-kick: linear-gradient(145deg, rgba(10, 24, 8, 0.97), rgba(6, 10, 8, 0.95));
+    --widget-panel-bg-gold: linear-gradient(145deg, rgba(32, 18, 6, 0.97), rgba(10, 8, 8, 0.95));
+    --widget-panel-bg-neutral: linear-gradient(145deg, rgba(18, 22, 32, 0.97), rgba(8, 10, 16, 0.95));
+    --widget-border-twitch: rgba(145, 70, 255, 0.42);
+    --widget-border-kick: rgba(83, 252, 24, 0.38);
+    --widget-border-gold: rgba(255, 201, 51, 0.4);
+    --widget-border-neutral: rgba(56, 189, 248, 0.32);
+
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --mobile-nav-h: 4.25rem;
+}
+
+/* —— Кнопки платформ —— */
+.btn-kick {
+    background: var(--gradient-kick) !important;
+    color: #041004 !important;
+    font-weight: 800 !important;
+    box-shadow: 0 4px 16px var(--kick-green-glow) !important;
+    border: none !important;
+}
+
+.btn-radmir {
+    background: var(--gradient-radmir) !important;
+    color: #1a0a00 !important;
+    font-weight: 800 !important;
+    box-shadow: 0 4px 16px rgba(255, 107, 26, 0.35) !important;
+    border: none !important;
+}
+
+/* —— Карточки платформ в профиле —— */
+.profile-platform-box {
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+}
+
+.profile-platform-box > label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 0.65rem;
+}
+
+.profile-platform-box--kick {
+    border-color: rgba(83, 252, 24, 0.22);
+    background: linear-gradient(160deg, rgba(83, 252, 24, 0.06), var(--bg-elevated));
+}
+
+.profile-platform-box--radmir {
+    border-color: rgba(255, 107, 26, 0.22);
+    background: linear-gradient(160deg, rgba(255, 107, 26, 0.08), var(--bg-elevated));
+}
+
+.stats-item--twitch .value { color: var(--twitch-text); }
+.stats-item--kick .value { color: var(--kick-text); }
+.stats-item--radmir .value { color: var(--radmir-gold); }

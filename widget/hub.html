@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат-игры · Hub</title>
+    <link rel="stylesheet" href="../css/widgets.css?v=obs4">
+    <style>
+
+        /* —— Мегафон —— */
+        .widget {
+            position: fixed;
+            left: 12px;
+            bottom: 12px;
+            width: 500px;
+            padding: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            z-index: 6;
+        }
+
+        .widget.showing { opacity: 1; transform: translateY(0); }
+        .widget.hiding { opacity: 0; transform: translateY(6px); }
+
+        .hub-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 0;
+            min-height: 118px;
+        }
+
+        .megaphone-wrap {
+            flex: 0 0 128px;
+            position: relative;
+            z-index: 2;
+            align-self: flex-end;
+        }
+
+        .megaphone {
+            width: 128px;
+            height: auto;
+            display: block;
+            transform: scaleX(-1);
+            filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
+            transform-origin: center bottom;
+        }
+
+        .megaphone-wrap.shouting .megaphone {
+            animation: megaphoneShout 0.55s ease;
+        }
+
+        @keyframes megaphoneShout {
+            0% { transform: scaleX(-1) scale(1); }
+            25% { transform: scaleX(-1) scale(1.06) rotate(-2deg); }
+            55% { transform: scaleX(-1) scale(0.98) rotate(1deg); }
+            100% { transform: scaleX(-1) scale(1); }
+        }
+
+        .shout-wave {
+            position: absolute;
+            left: 8px;
+            top: 28px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 220, 120, 0.7);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .megaphone-wrap.shouting .shout-wave {
+            animation: shoutWave 0.7s ease-out;
+        }
+
+        @keyframes shoutWave {
+            0% { opacity: 0.85; transform: scale(0.3); }
+            100% { opacity: 0; transform: scale(2.2); }
+        }
+
+        .bubble-stage {
+            flex: 1;
+            position: relative;
+            min-height: 96px;
+            margin-left: -18px;
+            margin-bottom: 8px;
+            border-radius: 16px;
+            padding: 11px 12px;
+            background: linear-gradient(160deg, rgba(18, 10, 36, 0.97), rgba(8, 8, 14, 0.96));
+            border: 2px solid rgba(167, 139, 250, 0.32);
+            box-shadow: 0 14px 36px rgba(40, 12, 80, 0.5);
+            color: #fff;
+            overflow: visible;
+        }
+
+        .bubble-stage::before {
+            content: "";
+            position: absolute;
+            left: -10px;
+            bottom: 22px;
+            width: 0;
+            height: 0;
+            border-top: 9px solid transparent;
+            border-bottom: 9px solid transparent;
+            border-right: 11px solid rgba(167, 139, 250, 0.32);
+        }
+
+        .bubble-stage::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: radial-gradient(circle at 0% 50%, rgba(145, 70, 255, 0.12), transparent 55%);
+            pointer-events: none;
+        }
+
+        .bubble-stage.hot-purple { border-color: rgba(167, 139, 250, 0.45); }
+        .bubble-stage.hot-purple::before { border-right-color: rgba(167, 139, 250, 0.45); }
+        .bubble-stage.hot-gold { border-color: rgba(251, 191, 36, 0.38); box-shadow: 0 14px 36px rgba(180, 83, 9, 0.25); }
+        .bubble-stage.hot-gold::before { border-right-color: rgba(251, 191, 36, 0.38); }
+        .bubble-stage.hot-cyan { border-color: rgba(34, 211, 238, 0.35); }
+        .bubble-stage.hot-cyan::before { border-right-color: rgba(34, 211, 238, 0.35); }
+        .bubble-stage.hot-pink { border-color: rgba(236, 72, 153, 0.38); }
+        .bubble-stage.hot-pink::before { border-right-color: rgba(236, 72, 153, 0.38); }
+
+        .mega-card {
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: 9px;
+            align-items: center;
+            position: absolute;
+            inset: 11px 12px;
+            opacity: 0;
+            transform: translateX(-48px) scale(0.55);
+            transform-origin: left center;
+            pointer-events: none;
+            transition:
+                opacity 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .mega-card.active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            position: relative;
+            inset: auto;
+            pointer-events: auto;
+            z-index: 1;
+        }
+
+        .mega-card.leave {
+            opacity: 0;
+            transform: translateX(36px) scale(0.88);
+            position: absolute;
+            inset: 11px 12px;
+        }
+
+        /* —— Полёт —— */
+        .sky {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            z-index: 5;
+        }
+
+        .sky.showing { opacity: 1; }
+
+        .plane {
+            position: absolute;
+            width: 130px;
+            height: auto;
+            z-index: 5;
+            filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
+            will-change: left, top;
+        }
+
+        .plane img { width: 100%; height: auto; display: block; }
+        .plane.back img { transform: scaleX(-1); }
+
+        .contrail {
+            position: absolute;
+            z-index: 2;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(196, 181, 253, 0.55);
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+            opacity: 0;
+            animation: puffFade 1.1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes puffFade {
+            0% { opacity: 0.75; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.2); }
+        }
+
+        .toast {
+            position: absolute;
+            z-index: 4;
+            width: min(300px, 38vw);
+            opacity: 0;
+            pointer-events: none;
+            will-change: left, top, transform, opacity;
+        }
+
+        .toast.in { animation: toastPop 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .toast.out { animation: toastOut 0.36s ease forwards; }
+        .toast.trail-right { transform-origin: right center; }
+        .toast.trail-left { transform-origin: left center; }
+
+        @keyframes toastPop {
+            0% { opacity: 0; transform: scale(0.45) translateX(28px); }
+            70% { opacity: 1; transform: scale(1.04) translateX(-4px); }
+            100% { opacity: 1; transform: scale(1) translateX(0); }
+        }
+
+        .toast.trail-left.in { animation-name: toastPopLeft; }
+
+        @keyframes toastPopLeft {
+            0% { opacity: 0; transform: scale(0.45) translateX(-28px); }
+            70% { opacity: 1; transform: scale(1.04) translateX(4px); }
+            100% { opacity: 1; transform: scale(1) translateX(0); }
+        }
+
+        @keyframes toastOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.82) translateY(-8px); }
+        }
+
+        .toast-panel {
+            position: relative;
+            border-radius: 14px;
+            padding: 10px 11px;
+            background: linear-gradient(160deg, rgba(18, 10, 36, 0.96), rgba(8, 8, 14, 0.95));
+            border: 2px solid rgba(167, 139, 250, 0.32);
+            box-shadow: 0 12px 32px rgba(40, 12, 80, 0.5);
+            color: #fff;
+        }
+
+        .toast-panel::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 22px;
+            height: 2px;
+            transform: translateY(-50%);
+            border-radius: 2px;
+        }
+
+        .toast.trail-right .toast-panel::before {
+            right: -20px;
+            background: linear-gradient(90deg, rgba(167, 139, 250, 0.65), rgba(167, 139, 250, 0.1));
+        }
+
+        .toast.trail-left .toast-panel::before {
+            left: -20px;
+            background: linear-gradient(90deg, rgba(167, 139, 250, 0.1), rgba(167, 139, 250, 0.65));
+        }
+
+        .toast-panel.hot-purple { border-color: rgba(167, 139, 250, 0.45); }
+        .toast-panel.hot-gold { border-color: rgba(251, 191, 36, 0.38); }
+        .toast-panel.hot-cyan { border-color: rgba(34, 211, 238, 0.35); }
+        .toast-panel.hot-pink { border-color: rgba(236, 72, 153, 0.38); }
+
+        /* —— Общие карточки —— */
+        .card {
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: 9px;
+            align-items: center;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 24px;
+            line-height: 1;
+            overflow: hidden;
+        }
+
+        .card-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .card-body { min-width: 0; }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .card-title {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.68);
+        }
+
+        .badge {
+            flex-shrink: 0;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .badge.live {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #86efac;
+        }
+
+        .badge.sale {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            color: #fde68a;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .badge.duel {
+            background: rgba(34, 211, 238, 0.12);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            color: #a5f3fc;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .card-cmd {
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.2;
+            color: #fff;
+            margin-bottom: 2px;
+            word-break: break-word;
+        }
+
+        .card-cmd .hl { color: #c4b5fd; }
+        .card-cmd .kw { color: #fde68a; }
+
+        .card-desc {
+            font-size: 11px;
+            line-height: 1.35;
+            color: rgba(255, 255, 255, 0.56);
+        }
+
+        .mode-tag, #obs-debug {
+            position: fixed;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.65);
+            font-size: 11px;
+            font-family: Consolas, monospace;
+            z-index: 20;
+            display: none;
+        }
+
+        .mode-tag { top: 8px; left: 8px; color: #a5f3fc; }
+        #obs-debug { left: 8px; bottom: 8px; color: #4ade80; max-width: 440px; word-break: break-all; }
+        .mode-tag.on, #obs-debug.on { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Мегафон -->
+    <div class="widget" id="megaphoneWidget">
+        <div class="hub-row">
+            <div class="megaphone-wrap" id="megaphoneWrap">
+                <span class="shout-wave"></span>
+                <img class="megaphone" src="../icons/megaphone.png" alt="">
+            </div>
+            <div class="bubble-stage" id="megaStage">
+                <div class="mega-card" id="megaRefka" data-key="refka">
+                    <div class="card-icon">⏱</div>
+                    <div class="card-body">
+                        <div class="card-top"><span class="card-title">Рефка</span></div>
+                        <div class="card-cmd"><span class="hl">!startrefka</span></div>
+                        <div class="card-desc">Копи время в чате · <span class="hl">!бонус</span> каждый день</div>
+                    </div>
+                </div>
+                <div class="mega-card" id="megaRaffle" data-key="raffle">
+                    <div class="card-icon">🎁</div>
+                    <div class="card-body">
+                        <div class="card-top">
+                            <span class="card-title">Розыгрыш</span>
+                            <span class="badge mega-badge"></span>
+                        </div>
+                        <div class="card-cmd mega-cmd"></div>
+                        <div class="card-desc mega-desc"></div>
+                    </div>
+                </div>
+                <div class="mega-card" id="megaContainers" data-key="containers">
+                    <div class="card-icon"><img src="../icons/conteinerclose.png" alt=""></div>
+                    <div class="card-body">
+                        <div class="card-top">
+                            <span class="card-title">Контейнеры</span>
+                            <span class="badge mega-badge"></span>
+                        </div>
+                        <div class="card-cmd mega-cmd"></div>
+                        <div class="card-desc mega-desc"></div>
+                    </div>
+                </div>
+                <div class="mega-card" id="megaCase" data-key="case">
+                    <div class="card-icon"><img src="../icons/3.png" alt=""></div>
+                    <div class="card-body">
+                        <div class="card-top">
+                            <span class="card-title">Кейс</span>
+                            <span class="badge mega-badge"></span>
+                        </div>
+                        <div class="card-cmd mega-cmd"></div>
+                        <div class="card-desc mega-desc"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Самолёт -->
+    <div class="sky" id="sky">
+        <div class="plane forward" id="plane">
+            <img src="../icons/fly.gif" alt="">
+        </div>
+        <div class="toast trail-right" id="flyToast">
+            <div class="toast-panel" id="flyToastPanel">
+                <div class="card">
+                    <div class="card-icon" id="flyCardIcon">⏱</div>
+                    <div class="card-body">
+                        <div class="card-top">
+                            <span class="card-title" id="flyCardTitle">Рефка</span>
+                            <span class="badge" id="flyCardBadge"></span>
+                        </div>
+                        <div class="card-cmd" id="flyCardCmd"></div>
+                        <div class="card-desc" id="flyCardDesc"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mode-tag" id="modeTag"></div>
+    <div id="obs-debug"></div>
+    <script src="obs-widget.js?v=3"></script>
+
+    <script>
+        const SITE_ORIGIN = new URL('..', window.location.href).href.replace(/\/$/, '');
+        const params = new URLSearchParams(location.search);
+        const DEBUG = params.get('debug') === '1';
+
+        const ALWAYS_CYCLE = params.get('always') === '1';
+        const CYCLE_MS = Math.max(30, parseInt(params.get('cycle') || '900', 10) || 900) * 1000;
+        const HOLD_MS = Math.max(1500, parseInt(params.get('hold') || '3500', 10) || 3500);
+        const FLY_MS = Math.max(8000, parseInt(params.get('fly') || '20000', 10) || 20000);
+        const TRANSITION_MS = Math.max(200, parseInt(params.get('transition') || '480', 10) || 480);
+        const FLY_TRANSITION_MS = 360;
+        const FIRST_DELAY_MS = Math.max(0, parseInt(params.get('start') || '8', 10) || 8) * 1000;
+
+        const CARD_KEYS = ['refka', 'raffle', 'containers', 'case'];
+        const MEGA_IDS = ['megaRefka', 'megaRaffle', 'megaContainers', 'megaCase'];
+        const NOTIF_AT = [0.22, 0.42, 0.62, 0.82];
+
+        const els = {
+            megaphoneWidget: document.getElementById('megaphoneWidget'),
+            megaphoneWrap: document.getElementById('megaphoneWrap'),
+            megaStage: document.getElementById('megaStage'),
+            sky: document.getElementById('sky'),
+            plane: document.getElementById('plane'),
+            flyToast: document.getElementById('flyToast'),
+            flyToastPanel: document.getElementById('flyToastPanel'),
+            flyCardIcon: document.getElementById('flyCardIcon'),
+            flyCardTitle: document.getElementById('flyCardTitle'),
+            flyCardBadge: document.getElementById('flyCardBadge'),
+            flyCardCmd: document.getElementById('flyCardCmd'),
+            flyCardDesc: document.getElementById('flyCardDesc'),
+            modeTag: document.getElementById('modeTag'),
+            debug: document.getElementById('obs-debug'),
+        };
+
+        if (DEBUG) {
+            els.debug.classList.add('on');
+            els.modeTag.classList.add('on');
+        }
+
+        let lastState = null;
+        let cycleRunning = false;
+        let cycleTimer = null;
+        let nextCycleAt = 0;
+        let showMegaphoneNext = true;
+        let flyForward = false;
+        let flyFrame = null;
+        let toastFollowing = false;
+        let lastPuffAt = 0;
+        let planePos = { left: 0, top: 0 };
+        let activeMegaId = null;
+        let lastMode = '';
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function waitUntil(targetMs) {
+            const wait = targetMs - performance.now();
+            if (wait > 0) return sleep(wait);
+            return Promise.resolve();
+        }
+
+        function escapeHtml(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function formatTime(seconds) {
+            const s = Math.max(0, Math.floor(seconds || 0));
+            return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+        }
+
+        function formatCooldown(seconds) {
+            const s = Math.max(0, Math.floor(seconds || 0));
+            if (s < 60) return s + ' сек';
+            const m = Math.floor(s / 60);
+            const r = s % 60;
+            return r > 0 ? m + ' мин ' + r + ' сек' : m + ' мин';
+        }
+
+        function easeInOutSine(t) {
+            return -(Math.cos(Math.PI * t) - 1) / 2;
+        }
+
+        function buildCardPayload(key, data) {
+            const cfg = data.config || {};
+            const stream = data.stream || {};
+            const raffle = data.raffle || {};
+            const containers = data.containers || {};
+            const caseState = data.case || {};
+            const isLive = !!stream.is_live;
+            const exampleKw = cfg.raffle_example_keyword || 'Скин';
+
+            const payloads = {
+                refka: {
+                    icon: '⏱', iconImg: null, title: 'Рефка', badge: '', badgeClass: '',
+                    cmdHtml: '<span class="hl">!startrefka</span>',
+                    desc: 'Копи время в чате · <span class="hl">!бонус</span> каждый день',
+                    hot: isLive ? 'hot-purple' : '', hotClass: isLive ? 'hot' : '',
+                },
+                raffle: {
+                    icon: '🎁', iconImg: null, title: 'Розыгрыш', badge: 'ожидание', badgeClass: '',
+                    cmdHtml: 'Напиши <span class="kw">«' + escapeHtml(exampleKw) + '»</span>',
+                    desc: 'Участвуй в розыгрыше на скин', hot: '', hotClass: '',
+                },
+                containers: {
+                    icon: null, iconImg: '../icons/conteinerclose.png', title: 'Контейнеры',
+                    badge: isLive ? 'готово' : 'оффлайн', badgeClass: isLive ? 'live' : '',
+                    cmdHtml: '<span class="hl">!контейнер ' + (cfg.containers_min_minutes || 30) + ' @ник</span>',
+                    desc: isLive ? 'Дуэль на машины · орёл / решка' : 'Только во время стрима',
+                    hot: '', hotClass: '',
+                },
+                case: {
+                    icon: null, iconImg: '../icons/3.png', title: 'Кейс',
+                    badge: String(caseState.cost_minutes ?? cfg.case_cost_minutes ?? 90) + ' мин',
+                    badgeClass: '', cmdHtml: '<span class="hl">!купить кейс</span>',
+                    desc: 'Купи кейс за накопленное время · нужен !startrefka',
+                    hot: '', hotClass: '',
+                },
+            };
+
+            const p = payloads[key];
+            const raffleCollecting = ['collecting', 'active'].includes(raffle.mode);
+            const raffleWinner = ['awaiting_response', 'responded'].includes(raffle.mode);
+
+            if (key === 'raffle') {
+                if (raffleCollecting && raffle.keyword) {
+                    p.badge = 'идёт'; p.badgeClass = 'live';
+                    p.cmdHtml = 'Напиши <span class="kw">«' + escapeHtml(raffle.keyword) + '»</span>';
+                    const parts = [];
+                    if (raffle.participants != null) parts.push(raffle.participants + ' участников');
+                    if (raffle.entry_seconds_left != null) parts.push('сбор ' + formatTime(raffle.entry_seconds_left));
+                    p.desc = parts.length ? parts.join(' · ') : p.desc;
+                    p.hot = 'hot-purple'; p.hotClass = 'hot';
+                } else if (raffleWinner && raffle.keyword) {
+                    p.badge = 'победитель'; p.badgeClass = 'live';
+                    p.cmdHtml = 'Слово: <span class="kw">«' + escapeHtml(raffle.keyword) + '»</span>';
+                    p.desc = (raffle.participants || 0) + ' участников · ждём ответ';
+                    p.hot = 'hot-gold'; p.hotClass = 'gold';
+                } else if (raffle.active) {
+                    p.hot = 'hot-purple'; p.hotClass = 'hot';
+                }
+            }
+
+            if (key === 'containers') {
+                if (containers.mode === 'active') {
+                    p.badge = 'дуэль'; p.badgeClass = 'duel';
+                    p.desc = 'Дуэль на машины в эфире';
+                    p.hot = 'hot-cyan'; p.hotClass = 'hot';
+                } else if ((containers.cooldown_remaining || 0) > 0) {
+                    p.badge = 'кд';
+                    p.desc = 'Перерыв ' + formatCooldown(containers.cooldown_remaining);
+                }
+            }
+
+            if (key === 'case') {
+                const costMin = caseState.cost_minutes ?? cfg.case_cost_minutes ?? 90;
+                if (caseState.mode === 'sale') {
+                    p.badge = formatTime(caseState.seconds_left);
+                    p.badgeClass = 'sale';
+                    p.desc = 'Продажа открыта · ' + costMin + ' мин рефки';
+                    p.hot = 'hot-pink'; p.hotClass = 'hot';
+                } else {
+                    p.badge = costMin + ' мин';
+                }
+            }
+
+            return p;
+        }
+
+        function applyPayloadToMegaCard(cardEl, p) {
+            cardEl.classList.toggle('hot', !!p.hotClass);
+            cardEl.classList.toggle('gold', p.hotClass === 'gold');
+            const badge = cardEl.querySelector('.mega-badge');
+            const cmd = cardEl.querySelector('.mega-cmd');
+            const desc = cardEl.querySelector('.mega-desc');
+            if (cmd) cmd.innerHTML = p.cmdHtml;
+            if (desc) {
+                if (p.desc.includes('<')) desc.innerHTML = p.desc;
+                else desc.textContent = p.desc;
+            }
+            if (badge) {
+                if (p.badge) {
+                    badge.textContent = p.badge;
+                    badge.className = 'badge mega-badge' + (p.badgeClass ? ' ' + p.badgeClass : '');
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        function render(data) {
+            lastState = data;
+            MEGA_IDS.forEach((id, i) => {
+                const key = CARD_KEYS[i];
+                applyPayloadToMegaCard(document.getElementById(id), buildCardPayload(key, data));
+            });
+            if (activeMegaId) updateMegaStageAccent(activeMegaId);
+        }
+
+        function updateMegaStageAccent(cardId) {
+            els.megaStage.className = 'bubble-stage';
+            const card = document.getElementById(cardId);
+            if (!card) return;
+            if (cardId === 'megaRaffle' && card.classList.contains('gold')) els.megaStage.classList.add('hot-gold');
+            else if (cardId === 'megaRaffle' && card.classList.contains('hot')) els.megaStage.classList.add('hot-purple');
+            else if (cardId === 'megaContainers' && card.classList.contains('hot')) els.megaStage.classList.add('hot-cyan');
+            else if (cardId === 'megaCase' && card.classList.contains('hot')) els.megaStage.classList.add('hot-pink');
+            else if (cardId === 'megaRefka' && card.classList.contains('hot')) els.megaStage.classList.add('hot-purple');
+        }
+
+        function resetMegaCards() {
+            MEGA_IDS.forEach(id => document.getElementById(id).classList.remove('active', 'leave'));
+            activeMegaId = null;
+            els.megaStage.className = 'bubble-stage';
+            els.megaphoneWrap.classList.remove('shouting');
+        }
+
+        function triggerShout() {
+            els.megaphoneWrap.classList.remove('shouting');
+            void els.megaphoneWrap.offsetWidth;
+            els.megaphoneWrap.classList.add('shouting');
+        }
+
+        async function hideMegaCard(id) {
+            const card = document.getElementById(id);
+            if (!card.classList.contains('active')) return;
+            card.classList.remove('active');
+            card.classList.add('leave');
+            await sleep(TRANSITION_MS);
+            card.classList.remove('leave');
+            if (activeMegaId === id) activeMegaId = null;
+        }
+
+        async function showMegaCard(id) {
+            if (activeMegaId && activeMegaId !== id) await hideMegaCard(activeMegaId);
+            triggerShout();
+            document.getElementById(id).classList.add('active');
+            activeMegaId = id;
+            updateMegaStageAccent(id);
+        }
+
+        async function runMegaphoneSequence(data) {
+            lastMode = 'megaphone';
+            if (DEBUG) els.modeTag.textContent = 'режим: мегафон';
+            resetMegaCards();
+            els.megaphoneWidget.classList.remove('hiding');
+            els.megaphoneWidget.classList.add('showing');
+            if (window.obsWidgetBoot) {
+                window.obsWidgetBoot.markShown(els.megaphoneWidget);
+            }
+
+            for (let i = 0; i < MEGA_IDS.length; i++) {
+                await showMegaCard(MEGA_IDS[i]);
+                await sleep(HOLD_MS);
+            }
+
+            if (activeMegaId) await hideMegaCard(activeMegaId);
+            await sleep(200);
+            els.megaphoneWidget.classList.remove('showing');
+            els.megaphoneWidget.classList.add('hiding');
+            await sleep(400);
+            resetMegaCards();
+        }
+
+        function getFlyDirection() {
+            if (params.get('forward') === '1') return true;
+            if (params.get('forward') === '0') return false;
+            flyForward = !flyForward;
+            return flyForward;
+        }
+
+        function planePosition(progress) {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const pw = els.plane.offsetWidth || 130;
+            const laneY = h * 0.78 - 50;
+            const pad = 40;
+            const start = -pw - pad;
+            const travel = w + pad * 2 + pw;
+            const eased = easeInOutSine(Math.max(0, Math.min(1, progress)));
+            return { left: start + travel * eased, top: laneY };
+        }
+
+        function setPlaneProgress(progress, forward) {
+            planePos = planePosition(progress);
+            els.plane.style.left = planePos.left + 'px';
+            els.plane.style.top = planePos.top + 'px';
+            els.plane.className = 'plane ' + (forward ? 'forward' : 'back');
+        }
+
+        function spawnPuff(x, y) {
+            const now = performance.now();
+            if (now - lastPuffAt < 120) return;
+            lastPuffAt = now;
+            const puff = document.createElement('div');
+            puff.className = 'contrail';
+            puff.style.left = (x - 4) + 'px';
+            puff.style.top = (y + 28) + 'px';
+            els.sky.appendChild(puff);
+            puff.addEventListener('animationend', () => puff.remove());
+        }
+
+        function updateFlyTrail(forward) {
+            const pw = els.plane.offsetWidth || 130;
+            const ph = els.plane.offsetHeight || 90;
+            const tw = els.flyToast.offsetWidth || 280;
+            const th = els.flyToast.offsetHeight || 68;
+            const gap = 16;
+            const inCls = els.flyToast.classList.contains('in') ? ' in' : '';
+            const outCls = els.flyToast.classList.contains('out') ? ' out' : '';
+
+            if (forward) {
+                els.flyToast.className = 'toast trail-right' + inCls + outCls;
+                let left = planePos.left - tw - gap;
+                left = Math.max(12, Math.min(left, window.innerWidth - tw - 12));
+                els.flyToast.style.left = left + 'px';
+            } else {
+                els.flyToast.className = 'toast trail-left' + inCls + outCls;
+                let left = planePos.left + pw + gap;
+                left = Math.max(12, Math.min(left, window.innerWidth - tw - 12));
+                els.flyToast.style.left = left + 'px';
+            }
+            els.flyToast.style.top = (planePos.top + (ph - th) / 2) + 'px';
+        }
+
+        function startFlight(forward, flightStart) {
+            return new Promise(resolve => {
+                const tick = (now) => {
+                    const elapsed = now - flightStart;
+                    const t = Math.min(1, elapsed / FLY_MS);
+                    const progress = forward ? t : (1 - t);
+                    setPlaneProgress(progress, forward);
+                    const pw = els.plane.offsetWidth || 130;
+                    const puffX = forward ? planePos.left + 10 : planePos.left + pw - 10;
+                    spawnPuff(puffX, planePos.top);
+                    if (toastFollowing) updateFlyTrail(forward);
+                    if (t < 1) flyFrame = requestAnimationFrame(tick);
+                    else { flyFrame = null; resolve(); }
+                };
+                flyFrame = requestAnimationFrame(tick);
+            });
+        }
+
+        function stopFlight() {
+            if (flyFrame) { cancelAnimationFrame(flyFrame); flyFrame = null; }
+        }
+
+        function fillFlyToast(key, data) {
+            const p = buildCardPayload(key, data);
+            els.flyCardTitle.textContent = p.title;
+            els.flyCardCmd.innerHTML = p.cmdHtml;
+            if (p.desc.includes('<')) els.flyCardDesc.innerHTML = p.desc;
+            else els.flyCardDesc.textContent = p.desc;
+            els.flyToastPanel.className = 'toast-panel' + (p.hot ? ' ' + p.hot : '');
+            if (p.badge) {
+                els.flyCardBadge.textContent = p.badge;
+                els.flyCardBadge.className = 'badge' + (p.badgeClass ? ' ' + p.badgeClass : '');
+                els.flyCardBadge.style.display = '';
+            } else {
+                els.flyCardBadge.style.display = 'none';
+            }
+            if (p.iconImg) els.flyCardIcon.innerHTML = '<img src="' + p.iconImg + '" alt="">';
+            else els.flyCardIcon.textContent = p.icon;
+        }
+
+        async function showFlyToast(key, data, forward) {
+            fillFlyToast(key, data);
+            toastFollowing = true;
+            updateFlyTrail(forward);
+            els.flyToast.classList.remove('out');
+            void els.flyToast.offsetWidth;
+            els.flyToast.classList.add('in');
+        }
+
+        async function hideFlyToast() {
+            els.flyToast.classList.remove('in');
+            els.flyToast.classList.add('out');
+            await sleep(FLY_TRANSITION_MS);
+            els.flyToast.classList.remove('out');
+            toastFollowing = false;
+        }
+
+        async function runFlySequence(data) {
+            lastMode = 'fly';
+            const forward = getFlyDirection();
+            if (DEBUG) {
+                els.modeTag.textContent = forward ? 'режим: самолёт · вперёд' : 'режим: самолёт · назад';
+            }
+
+            els.flyToast.className = 'toast ' + (forward ? 'trail-right' : 'trail-left');
+            els.flyToast.classList.remove('in', 'out');
+            toastFollowing = false;
+
+            setPlaneProgress(forward ? 0 : 1, forward);
+            els.sky.classList.add('showing');
+            if (window.obsWidgetBoot) {
+                window.obsWidgetBoot.markShown(els.sky);
+            }
+            const flightStart = performance.now();
+            const flightPromise = startFlight(forward, flightStart);
+
+            for (let i = 0; i < CARD_KEYS.length; i++) {
+                await waitUntil(flightStart + NOTIF_AT[i] * FLY_MS);
+                await showFlyToast(CARD_KEYS[i], data, forward);
+                await sleep(HOLD_MS);
+                await hideFlyToast();
+            }
+
+            await flightPromise;
+            await sleep(250);
+            els.sky.classList.remove('showing');
+            els.sky.querySelectorAll('.contrail').forEach(el => el.remove());
+            stopFlight();
+        }
+
+        function getNextMainMode() {
+            if (params.get('mode') === 'megaphone') return 'megaphone';
+            if (params.get('mode') === 'fly') return 'fly';
+            const mode = showMegaphoneNext ? 'megaphone' : 'fly';
+            showMegaphoneNext = !showMegaphoneNext;
+            return mode;
+        }
+
+        function hideHubPresentation() {
+            els.megaphoneWidget.classList.remove('showing');
+            els.megaphoneWidget.classList.add('hiding');
+            els.sky.classList.remove('showing');
+            els.flyToast.classList.remove('in', 'out');
+            toastFollowing = false;
+            resetMegaCards();
+            stopFlight();
+            if (window.obsWidgetBoot) {
+                window.obsWidgetBoot.markHidden(els.megaphoneWidget);
+                window.obsWidgetBoot.markHidden(els.sky);
+            }
+        }
+
+        function shouldRunHubCycle(data) {
+            if (ALWAYS_CYCLE) return true;
+            if (params.get('mode') === 'megaphone' || params.get('mode') === 'fly') return true;
+            return !!(data && data.stream && data.stream.is_live);
+        }
+
+        async function runCycle() {
+            if (cycleRunning) return;
+            cycleRunning = true;
+
+            const data = lastState || await fetchState();
+            render(data);
+
+            if (!shouldRunHubCycle(data)) {
+                hideHubPresentation();
+                cycleRunning = false;
+                scheduleNextCycle();
+                return;
+            }
+
+            const mode = getNextMainMode();
+
+            if (mode === 'megaphone') {
+                await runMegaphoneSequence(data);
+            } else {
+                await runFlySequence(data);
+            }
+
+            cycleRunning = false;
+            scheduleNextCycle();
+        }
+
+        function scheduleNextCycle() {
+            if (cycleTimer) clearTimeout(cycleTimer);
+            nextCycleAt = Date.now() + CYCLE_MS;
+            cycleTimer = setTimeout(runCycle, CYCLE_MS);
+            updateDebug();
+        }
+
+        function updateDebug() {
+            if (!DEBUG) return;
+            els.debug.textContent = JSON.stringify({
+                cycle_sec: CYCLE_MS / 1000,
+                next_in_sec: Math.max(0, Math.ceil((nextCycleAt - Date.now()) / 1000)),
+                next_mode: showMegaphoneNext ? 'megaphone' : 'fly',
+                last_mode: lastMode,
+                running: cycleRunning,
+            }, null, 0);
+        }
+
+        async function fetchState() {
+            const res = await fetch(SITE_ORIGIN + '/api/hub_state.php?_=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        }
+
+        async function poll() {
+            try { render(await fetchState()); }
+            catch (e) { if (DEBUG) els.debug.textContent = 'err: ' + e.message; }
+        }
+
+        poll();
+        setInterval(poll, 1200);
+        if (DEBUG) setInterval(updateDebug, 500);
+        hideHubPresentation();
+        document.body.addEventListener('obs-widget-resume', function () {
+            cycleRunning = false;
+            hideHubPresentation();
+            poll();
+        });
+        setTimeout(runCycle, FIRST_DELAY_MS);
+    </script>
+</body>
+</html>

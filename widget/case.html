@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Widget</title>
+    <link rel="stylesheet" href="../css/widgets.css?v=obs4">
+    <style>
+        .widget {
+            min-width: 560px;
+            min-height: 300px;
+        }
+
+        .panel {
+            width: min(560px, 100%);
+        }
+
+        .title {
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            line-height: 1.1;
+            text-shadow: 0 0 24px rgba(167, 139, 250, 0.45);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.78);
+            margin-bottom: 18px;
+        }
+
+        .timer {
+            font-size: 64px;
+            font-weight: 800;
+            line-height: 1;
+            color: #fde68a;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.45);
+            margin: 8px 0 14px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer.urgent {
+            color: #f87171;
+            animation: pulse 0.8s ease-in-out infinite;
+        }
+
+        .progress {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .progress > span {
+            display: block;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #a855f7, #ec4899, #f59e0b);
+            transform-origin: left center;
+            transition: transform 0.2s linear;
+        }
+
+        .case-box {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 14px;
+        }
+
+        .case-box .box {
+            width: 100%;
+            height: 100%;
+            border-radius: 18px;
+            background: linear-gradient(160deg, #7c3aed 0%, #4c1d95 55%, #1e1b4b 100%);
+            border: 2px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 12px 30px rgba(76, 29, 149, 0.45);
+            overflow: hidden;
+        }
+
+        .case-box .box img {
+            width: 92%;
+            height: 92%;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+        }
+
+        .case-box .box.mystery {
+            font-size: 48px;
+        }
+
+        .case-box.flash .box {
+            animation: pop 0.7s ease forwards;
+        }
+
+        .buyer, .hero-name {
+            font-size: 30px;
+            font-weight: 800;
+            color: #e9d5ff;
+            min-height: 36px;
+            text-shadow: 0 0 24px rgba(167, 139, 250, 0.45);
+            line-height: 1.2;
+        }
+
+        .hint {
+            margin-top: 14px;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.62);
+        }
+
+        .hidden { display: none; }
+
+        .confetti {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .confetti span {
+            position: absolute;
+            top: -12px;
+            width: 8px;
+            height: 14px;
+            border-radius: 2px;
+            opacity: 0.9;
+            animation: fall linear forwards;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-120%); }
+            45%, 100% { transform: translateX(120%); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.14); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="widget" id="widget">
+        <div class="panel gh-panel--twitch">
+            <div class="badge gh-badge--twitch" id="badge">Старт продажи</div>
+            <div class="title" id="title">Рандомный кейс</div>
+            <div class="subtitle" id="subtitle">Успей купить, пока идёт таймер</div>
+
+            <div class="timer" id="timer">35</div>
+            <div class="progress"><span id="progressBar"></span></div>
+
+            <div class="case-box" id="caseBox">
+                <div class="box mystery" id="caseVisual">❓</div>
+            </div>
+
+            <div class="buyer" id="buyer"></div>
+            <div class="hint" id="hint">!купить кейс — 90 минут рефки</div>
+        </div>
+    </div>
+
+    <div class="confetti" id="confetti"></div>
+    <div id="obs-debug"></div>
+    <script src="obs-widget.js?v=3"></script>
+
+    <script>
+        const SITE_ORIGIN = new URL('..', window.location.href).href.replace(/\/$/, '');
+        const API_STATE = SITE_ORIGIN + '/api/case_state.php';
+        const API_ACK = SITE_ORIGIN + '/api/case_ack.php';
+        const ICONS_BASE = SITE_ORIGIN + '/icons/';
+        const DEBUG = /[?&]debug=1/.test(window.location.search);
+        const POLL_MS = 800;
+        const PURCHASE_FLASH_MS = 4500;
+
+        const debugEl = document.getElementById('obs-debug');
+        function setDebug(text) {
+            if (!DEBUG || !debugEl) return;
+            debugEl.textContent = text;
+            debugEl.classList.add('on');
+        }
+
+        function getJson(url) {
+            return new Promise(function(resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState !== 4) return;
+                    if (xhr.status < 200 || xhr.status >= 300) {
+                        reject(new Error('HTTP ' + xhr.status));
+                        return;
+                    }
+                    try {
+                        resolve(JSON.parse(xhr.responseText));
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+                xhr.send();
+            });
+        }
+
+        let lastProcessedId = 0;
+        let busy = false;
+        let saleEndsAt = 0;
+        let saleDuration = 35;
+        let timerHandle = null;
+
+        const els = {
+            widget: document.getElementById('widget'),
+            badge: document.getElementById('badge'),
+            title: document.getElementById('title'),
+            subtitle: document.getElementById('subtitle'),
+            timer: document.getElementById('timer'),
+            progressBar: document.getElementById('progressBar'),
+            caseBox: document.getElementById('caseBox'),
+            caseVisual: document.getElementById('caseVisual'),
+            buyer: document.getElementById('buyer'),
+            hint: document.getElementById('hint'),
+            confetti: document.getElementById('confetti'),
+        };
+
+        function caseIconUrl(data) {
+            if (!data) return '';
+            if (data.case_icon_url) return data.case_icon_url;
+            if (typeof data.case_icon_index === 'number' && data.case_icon_index >= 0 && data.case_icon_index <= 16) {
+                return ICONS_BASE + data.case_icon_index + '.png';
+            }
+            return '';
+        }
+
+        function setCaseVisual(data, mystery) {
+            const box = els.caseVisual;
+            if (!box) return;
+
+            if (mystery) {
+                box.className = 'box mystery';
+                box.textContent = '❓';
+                return;
+            }
+
+            const src = caseIconUrl(data);
+            if (!src) {
+                box.className = 'box mystery';
+                box.textContent = '📦';
+                return;
+            }
+
+            box.className = 'box';
+            box.innerHTML = '<img src="' + src.replace(/"/g, '&quot;') + '" alt="">';
+        }
+
+        function spawnConfetti() {
+            els.confetti.innerHTML = '';
+            const colors = ['#a78bfa', '#f472b6', '#fbbf24', '#34d399', '#60a5fa'];
+            for (let i = 0; i < 28; i++) {
+                const piece = document.createElement('span');
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.background = colors[i % colors.length];
+                piece.style.animationDuration = (1.8 + Math.random() * 1.5) + 's';
+                piece.style.animationDelay = (Math.random() * 0.5) + 's';
+                els.confetti.appendChild(piece);
+            }
+        }
+
+        function stopTimer() {
+            if (timerHandle) {
+                clearInterval(timerHandle);
+                timerHandle = null;
+            }
+        }
+
+        function syncSaleTimer(data, defaultDuration) {
+            const secondsLeft = Math.max(0, Number(data.seconds_left) || 0);
+            saleDuration = Math.max(1, secondsLeft || defaultDuration);
+            saleEndsAt = Math.floor(Date.now() / 1000) + secondsLeft;
+            return secondsLeft > 0;
+        }
+
+        function updateCountdown() {
+            if (!saleEndsAt) {
+                return;
+            }
+            const left = Math.max(0, saleEndsAt - Math.floor(Date.now() / 1000));
+            els.timer.textContent = String(left);
+            els.timer.classList.toggle('urgent', left > 0 && left <= 5);
+            const ratio = saleDuration > 0 ? left / saleDuration : 0;
+            els.progressBar.style.transform = 'scaleX(' + Math.max(0, Math.min(1, ratio)) + ')';
+
+            if (left <= 0) {
+                stopTimer();
+                hideWidget();
+            }
+        }
+
+        function showSale(data) {
+            showWidget();
+            els.badge.textContent = 'Продажа открыта';
+            els.title.textContent = data.title || 'Рандомный кейс';
+            els.subtitle.textContent = 'Только 1 кейс! Содержимое узнаешь в чате';
+            els.timer.classList.remove('hidden');
+            els.progressBar.parentElement.classList.remove('hidden');
+            els.caseBox.className = 'case-box';
+            setCaseVisual(data, true);
+            els.buyer.textContent = '';
+            const minutes = data.cost_minutes || 90;
+            const command = data.command || '!купить кейс';
+            els.hint.textContent = command + ' — ' + minutes + ' минут рефки';
+
+            if (!syncSaleTimer(data, 35)) {
+                hideWidget();
+                return;
+            }
+
+            stopTimer();
+            updateCountdown();
+            timerHandle = setInterval(updateCountdown, 200);
+        }
+
+        function hideWidget() {
+            stopTimer();
+            saleEndsAt = 0;
+            els.confetti.innerHTML = '';
+            els.widget.classList.remove('visible');
+            if (window.obsWidgetBoot) {
+                window.obsWidgetBoot.markHidden(els.widget);
+            }
+        }
+
+        function showWidget() {
+            els.widget.classList.add('visible');
+            if (window.obsWidgetBoot) {
+                window.obsWidgetBoot.markShown(els.widget);
+            }
+        }
+
+        async function ackPurchase(id) {
+            try {
+                await fetch(API_ACK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id }),
+                });
+            } catch (error) {
+                console.error('ack failed', error);
+            }
+        }
+
+        async function playPurchase(data) {
+            if (data.id <= lastProcessedId) {
+                return;
+            }
+            busy = true;
+            stopTimer();
+
+            showWidget();
+            els.badge.textContent = 'Кейс куплен';
+            els.title.textContent = 'Покупатель';
+            els.timer.classList.add('hidden');
+            els.progressBar.parentElement.classList.add('hidden');
+            els.caseBox.className = 'case-box flash';
+            setCaseVisual(data, false);
+            els.buyer.textContent = '@' + data.username;
+            els.subtitle.textContent = data.collection_name || 'Коллекцию смотри в чате';
+            els.hint.textContent = 'Стример откроет приз в игре';
+            spawnConfetti();
+
+            await new Promise(resolve => setTimeout(resolve, PURCHASE_FLASH_MS));
+            await ackPurchase(data.id);
+            lastProcessedId = data.id;
+
+            hideWidget();
+            busy = false;
+            pollState();
+        }
+
+        async function pollState() {
+            if (busy) {
+                return;
+            }
+
+            try {
+                const data = await getJson(API_STATE + '?_=' + Date.now());
+                setDebug('API: ' + data.mode + (data.seconds_left != null ? ' (' + data.seconds_left + 's)' : ''));
+
+                if (data.mode === 'purchased') {
+                    if (data.id <= lastProcessedId) {
+                        await ackPurchase(data.id);
+                        hideWidget();
+                        return;
+                    }
+                    if (saleEndsAt > 0) {
+                        showWidget();
+                    }
+                    await playPurchase(data);
+                    return;
+                }
+
+                if (data.mode === 'sale') {
+                    showSale(data);
+                    return;
+                }
+
+                hideWidget();
+            } catch (error) {
+                setDebug('Ошибка API: ' + error.message);
+                console.error('poll failed', error);
+            }
+        }
+
+        setDebug('виджет загружен');
+        hideWidget();
+        document.body.addEventListener('obs-widget-resume', function () {
+            if (busy) return;
+            pollState();
+        });
+        pollState();
+        setInterval(pollState, POLL_MS);
+    </script>
+</body>
+</html>
